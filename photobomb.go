@@ -29,35 +29,31 @@ func createBatch(w http.ResponseWriter) sdk.DeserializedObject {
 	return result
 }
 
-// foo creates a batch, uploads some photos, deletes some photos,
-// and lists the photos in the batch
-func foo(w http.ResponseWriter, r *http.Request) {
+func batch(w http.ResponseWriter, r *http.Request) {
 	goodBatch := sdk.Batch{ID: 86503}
 	badBatch := sdk.Batch{ID: -1}
 	newBatch := sdk.Batch{SubmissionName: "my batch"}
+
 	raid := NewRaid([]Bomb{
 		Bomb{
-			Flechette{client, "GET", goodBatch.Path(), goodBatch},
-			Flechette{client, "GET", badBatch.Path(), badBatch},
-			Flechette{client, "POST", sdk.Batches, newBatch},
+			Flechette{&client, "GET", goodBatch.Path(), goodBatch},
+			Flechette{&client, "GET", badBatch.Path(), badBatch},
+			Flechette{&client, "POST", sdk.Batches, newBatch},
 		},
 	})
+	log.Debugf("%v", raid)
 	summary := raid.Begin()
-	// w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	// json.NewEncoder(w).Encode(summary)
 	w.Write(summary)
-	//createBatch(w)
-
-	// uploadPhotos()
-	// deletePhotos()
-	// listPhotos()
 }
 
 func main() {
 	http.HandleFunc("/", usage)
-	http.HandleFunc("/batch", foo)
+	http.HandleFunc("/batch", batch)
 
-	http.ListenAndServe(":8080", nil)
+	tcpSocket := ":8080"
+
+	log.Infof("listening on %s", tcpSocket)
+	http.ListenAndServe(tcpSocket, nil)
 }
 
 func usage(w http.ResponseWriter, r *http.Request) {
