@@ -40,10 +40,12 @@ func (f *Flechette) String() string {
 // A Bomb is a series of URLs and methods that represent a workflow.
 type Bomb []Flechette
 
-func Drop(b Bomb) []byte {
+// Drop iterates through the Flechettes within a bomb, fires all of them, and
+// returns a summary of the results.
+func Drop(bomb Bomb) []byte {
 	var summary []byte
-	for _, f := range b {
-		obj, _ := f.Fire()
+	for _, flechette := range bomb {
+		obj, _ := flechette.Fire()
 		response, err := sdk.Marshal(obj)
 		check(err)
 		summary = append(summary, response...)
@@ -51,11 +53,14 @@ func Drop(b Bomb) []byte {
 	return summary
 }
 
+// A Raid is a collection of bombs capable of reporting summary statistics.
 type Raid struct {
 	StartTime time.Time `json:"start_time"`
 	Payload   []Bomb    `json:"payload"`
 }
 
+// Begin iterates through the Bombs in a Raid's Payload, dropping each of
+// them, and then returns a summary of the results.
 func (r *Raid) Begin() []byte {
 	var raidSummary []byte
 	for _, bomb := range r.Payload {
@@ -64,6 +69,7 @@ func (r *Raid) Begin() []byte {
 	return raidSummary
 }
 
+// Duration reports how much time has elapsed since the start of the Raid.
 func (r *Raid) Duration() time.Duration {
 	return time.Now().Sub(r.StartTime)
 }
@@ -74,6 +80,7 @@ func (r *Raid) String() string {
 	return string(out)
 }
 
+// NewRaid initializes and returns a Raid, . It should be used in lieu of Raid literals.
 func NewRaid(payload []Bomb) Raid {
 	return Raid{time.Now(), payload}
 }

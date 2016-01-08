@@ -1,3 +1,4 @@
+// Photobomb conducts workflow tests triggered by requests to its web server.
 package main
 
 import (
