@@ -28,6 +28,10 @@ func (b *Bullet) Deploy() (sdk.DeserializedObject, error) {
 		return b.client.Get(b.URL), nil
 	case "POST", "post":
 		return b.client.Create(b.URL, b.payload), nil
+	case "PUT", "put":
+		return b.client.Update(b.URL, b.payload), nil
+	case "DELETE", "delete":
+		return b.client.Delete(b.URL), nil
 	}
 	return sdk.DeserializedObject{}, errors.New("undefined method")
 }
