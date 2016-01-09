@@ -6,46 +6,48 @@ import (
 	"fmt"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
+
 	sdk "github.com/dysolution/espsdk"
 )
 
-// A Flechette represents a single HTTP request that performs an operation
+// A Bullet represents a single HTTP request that performs an operation
 // against a single API endpoint. Each Bomb can contain one or multiple
-// Flechettes.
-type Flechette struct {
+// Bullets.
+type Bullet struct {
 	client  *sdk.Client
 	Method  string `json:"method"`
 	URL     string `json:"url"`
 	payload sdk.Serializable
 }
 
-// Fire makes the Flechette hit its target, hitting the endpoint with the
-// described method and (optional) payload.
-func (f *Flechette) Fire() (sdk.DeserializedObject, error) {
-	switch f.Method {
+// Deploy sets the Bullet in motion.
+func (b *Bullet) Deploy() (sdk.DeserializedObject, error) {
+	switch b.Method {
 	case "GET", "get":
-		return f.client.Get(f.URL), nil
+		return b.client.Get(b.URL), nil
 	case "POST", "post":
-		return f.client.Create(f.URL, f.payload), nil
+		return b.client.Create(b.URL, b.payload), nil
 	}
 	return sdk.DeserializedObject{}, errors.New("undefined method")
 }
 
-func (f *Flechette) String() string {
+func (f *Bullet) String() string {
 	out, err := json.MarshalIndent(f, "", "  ")
 	check(err)
 	return fmt.Sprintf("%s", out)
 }
 
 // A Bomb is a series of URLs and methods that represent a workflow.
-type Bomb []Flechette
+type Bomb []Bullet
 
-// Drop iterates through the Flechettes within a bomb, fires all of them, and
+// Drop iterates through the Bullets within a bomb, fires all of them, and
 // returns a summary of the results.
 func Drop(bomb Bomb) []byte {
 	var summary []byte
-	for _, flechette := range bomb {
-		obj, _ := flechette.Fire()
+	for _, bullet := range bomb {
+		obj, _ := bullet.Deploy()
+		log.Debugf("%s", bullet)
 		response, err := sdk.Marshal(obj)
 		check(err)
 		summary = append(summary, response...)

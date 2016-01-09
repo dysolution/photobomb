@@ -37,9 +37,9 @@ func batch(w http.ResponseWriter, r *http.Request) {
 
 	raid := NewRaid([]Bomb{
 		Bomb{
-			Flechette{&client, "GET", goodBatch.Path(), goodBatch},
-			Flechette{&client, "GET", badBatch.Path(), badBatch},
-			Flechette{&client, "POST", sdk.Batches, newBatch},
+			Bullet{&client, "GET", goodBatch.Path(), goodBatch},
+			Bullet{&client, "GET", badBatch.Path(), badBatch},
+			Bullet{&client, "POST", sdk.Batches, newBatch},
 		},
 	})
 	log.Debugf("%v", raid)
