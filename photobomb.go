@@ -9,6 +9,14 @@ import (
 	sdk "github.com/dysolution/espsdk"
 )
 
+func init() {
+	// Log as JSON instead of the default ASCII formatter.
+	log.SetFormatter(&log.JSONFormatter{})
+
+	// Only log the warning severity or above.
+	log.SetLevel(log.InfoLevel)
+}
+
 var client = sdk.GetClient(
 	os.Getenv("ESP_API_KEY"),
 	os.Getenv("ESP_API_SECRET"),
@@ -21,13 +29,6 @@ func check(e error) {
 	if e != nil {
 		log.Fatal(e)
 	}
-}
-
-func createBatch(w http.ResponseWriter) sdk.DeserializedObject {
-	path := sdk.Batch{ID: 86503}.Path()
-	data := sdk.Batch{SubmissionName: "my batch"}
-	result := sdk.Create(path, data, &client)
-	return result
 }
 
 func batch(w http.ResponseWriter, r *http.Request) {
