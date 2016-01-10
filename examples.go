@@ -50,6 +50,15 @@ func defineBullets() {
 
 	edBatch := sdk.Batch{ID: 86103}
 	bullet("get_photos", "GET", edBatch.Path(), edBatch)
+
+	release := sdk.Release{
+		SubmissionBatchID: 86103,
+		FileName:          "some_property.jpg",
+		ReleaseType:       "Property",
+		FilePath:          "submission/releases/batch_86103/24780225369200015_some_property.jpg",
+		MimeType:          "image/jpeg",
+	}
+	bullet("create_release", "POST", release.Path(), release)
 }
 
 // ExampleConfig returns an example of a complete configuration for the app.
@@ -70,10 +79,14 @@ func ExampleConfig() Raid {
 		bullets["create_photo"],
 		bullets["get_photos"],
 	)
+	makeBomb("upload_a_release",
+		bullets["create_release"],
+	)
 
 	return NewRaid(
 		bombs["create_and_confirm_batch"],
 		bombs["get_invalid_batches"],
 		bombs["create_and_confirm_photo"],
+		bombs["upload_a_release"],
 	)
 }
