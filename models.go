@@ -7,18 +7,22 @@ import (
 	"time"
 
 	log "github.com/Sirupsen/logrus"
-
 	sdk "github.com/dysolution/espsdk"
 )
+
+type Serializable interface {
+	Marshal() ([]byte, error)
+}
 
 // A Bullet represents a single HTTP request that performs an operation
 // against a single API endpoint. Each Bomb can contain one or multiple
 // Bullets.
 type Bullet struct {
 	client  *sdk.Client
-	Method  string `json:"method"`
-	URL     string `json:"url"`
-	payload sdk.Serializable
+	Name    string         `json:"name"`
+	Method  string         `json:"method"`
+	URL     string         `json:"url"`
+	Payload sdk.RESTObject `json:"payload,omitempty"`
 }
 
 // Deploy sets the Bullet in motion.
@@ -27,50 +31,58 @@ func (b *Bullet) Deploy() (sdk.DeserializedObject, error) {
 	case "GET", "get":
 		return b.client.Get(b.URL), nil
 	case "POST", "post":
-		return b.client.Create(b.URL, b.payload), nil
+		return b.client.Create(b.Payload), nil
 	case "PUT", "put":
-		return b.client.Update(b.URL, b.payload), nil
+		return b.client.Update(b.Payload), nil
 	case "DELETE", "delete":
 		return b.client.Delete(b.URL), nil
 	}
 	return sdk.DeserializedObject{}, errors.New("undefined method")
 }
 
-func (f *Bullet) String() string {
-	out, err := json.MarshalIndent(f, "", "  ")
+func (b *Bullet) String() string {
+	out, err := json.MarshalIndent(b, "", "  ")
 	check(err)
 	return fmt.Sprintf("%s", out)
 }
 
-// A Bomb is a series of URLs and methods that represent a workflow.
-type Bomb []Bullet
+// A Bomb is a collection of Bullets. It represents a list of tasks that
+// compose a workflow.
+//
+// For example, a common workflow would be:
+//   1. list all batches
+//   2. get the metadata for a batch
+//   3. upload a contribution to the batch
+type Bomb struct {
+	Bullets []Bullet `json:"bullets"`
+}
 
 // Drop iterates through the Bullets within a bomb, fires all of them, and
 // returns a summary of the results.
-func Drop(bomb Bomb) []byte {
-	var summary []byte
-	for _, bullet := range bomb {
+func Drop(bomb Bomb) []sdk.DeserializedObject {
+	var summary []sdk.DeserializedObject
+	for _, bullet := range bomb.Bullets {
 		obj, _ := bullet.Deploy()
-		log.Debugf("%s", bullet)
-		response, err := sdk.Marshal(obj)
-		check(err)
-		summary = append(summary, response...)
+		summary = append(summary, obj)
 	}
 	return summary
 }
 
 // A Raid is a collection of bombs capable of reporting summary statistics.
 type Raid struct {
-	StartTime time.Time `json:"start_time"`
-	Payload   []Bomb    `json:"payload"`
+	StartTime time.Time `json:"-"`
+	Bombs     []Bomb    `json:"bombs"`
 }
 
-// Begin iterates through the Bombs in a Raid's Payload, dropping each of
+// Conduct iterates through the Bombs in a Raid's Payload, dropping each of
 // them, and then returns a summary of the results.
-func (r *Raid) Begin() []byte {
+func (r *Raid) Conduct() []byte {
 	var raidSummary []byte
-	for _, bomb := range r.Payload {
-		raidSummary = append(raidSummary, Drop(bomb)...)
+	for _, bomb := range r.Bombs {
+		response, err := json.MarshalIndent(Drop(bomb), "", "    ")
+		check(err)
+		log.Debugf("%s", response)
+		raidSummary = append(raidSummary, response...)
 	}
 	return raidSummary
 }
@@ -87,6 +99,10 @@ func (r *Raid) String() string {
 }
 
 // NewRaid initializes and returns a Raid, . It should be used in lieu of Raid literals.
-func NewRaid(payload []Bomb) Raid {
+func NewRaid(bombs ...Bomb) Raid {
+	var payload []Bomb
+	for _, bomb := range bombs {
+		payload = append(payload, bomb)
+	}
 	return Raid{time.Now(), payload}
 }
