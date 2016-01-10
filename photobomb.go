@@ -3,6 +3,8 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -82,19 +84,46 @@ func execute(w http.ResponseWriter, r *http.Request) {
 }
 
 func usage(w http.ResponseWriter, r *http.Request) {
-	usage := []byte(`
-Paths:
+	const tpl = `
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>{{.AppName}}</title>
+	</head>
+	<body>
+    <h1>Routes</h1>
+    <table>
+      <tr><th>Path</th><th>Action<th></tr>
+		{{range $path, $helpText := .Routes}}<tr><td><a href="{{ $path }}">{{ $path }}</a></td><td>{{ $helpText }}</td></tr>{{end}}
+    </table>
+      <div>
+        <h1>Configuration</h2>
+        <pre>{{ .Config }}</pre>
+      </div>
+	</body>
+</html>`
 
-/          display this message
-/example   display an example config
-/config    display the current config
-/execute   execute the current config
+	t, err := template.New("webpage").Parse(tpl)
+	routes := make(map[string]string)
+	routes["/"] = "display this message"
+	routes["/example"] = "display an example config"
+	routes["/config"] = "display the current config"
+	routes["/execute"] = "execute the current config"
 
-Configuration:
-
-`)
 	output, err := json.MarshalIndent(config, "", "    ")
 	check(err)
-	usage = append(usage, output...)
-	w.Write(usage)
+
+	data := struct {
+		AppName string
+		Routes  map[string]string
+		Config  string
+	}{
+		AppName: appID,
+		Routes:  routes,
+		Config:  string(output),
+	}
+
+	err = t.Execute(w, data)
+	check(err)
 }
