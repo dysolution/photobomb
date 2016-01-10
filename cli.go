@@ -14,8 +14,8 @@ import (
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "photobomb"
-	app.Version = "0.0.1"
+	app.Name = NAME
+	app.Version = VERSION
 	app.Usage = "test workflows for the Getty Images ESP API"
 	app.Author = "Jordan Peterson"
 	app.Email = "dysolution@gmail.com"

@@ -11,6 +11,11 @@ import (
 	sdk "github.com/dysolution/espsdk"
 )
 
+const NAME = "photobomb"
+const VERSION = "0.0.1"
+
+var appID = fmt.Sprintf("%s %s", NAME, VERSION)
+
 var client sdk.Client
 var token sdk.Token
 var config Raid
