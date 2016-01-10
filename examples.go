@@ -1,6 +1,8 @@
 package main
 
 import (
+	"time"
+
 	sdk "github.com/dysolution/espsdk"
 	"github.com/icrowley/fake"
 )
@@ -26,7 +28,7 @@ func defineBullets() {
 	bullet("get_batches", "GET", sdk.Batches, nil)
 
 	bullet("create_batch", "POST", sdk.Batches, sdk.Batch{
-		SubmissionName: "photobomb: " + fake.Model(),
+		SubmissionName: appID + ": " + fake.FullName(),
 		SubmissionType: "getty_creative_video",
 	})
 
@@ -35,13 +37,13 @@ func defineBullets() {
 
 	edPhoto := sdk.Contribution{
 		SubmissionBatchID:    86102,
-		CameraShotDate:       "12/14/2015",
+		CameraShotDate:       time.Now().Format("01/02/2006"),
 		ContentProviderName:  "provider",
 		ContentProviderTitle: "Contributor",
-		CountryOfShoot:       "United States",
-		CreditLine:           "Ansel Adams",
-		FileName:             "el_capitan_merced_river_clouds.jpg",
-		Headline:             "El Capitan, Merced River, Clouds",
+		CountryOfShoot:       fake.Country(),
+		CreditLine:           fake.FullName(),
+		FileName:             fake.Word() + ".jpg",
+		Headline:             fake.Sentence(),
 		IptcCategory:         "S",
 		SiteDestination:      []string{"Editorial", "WireImage.com"},
 		Source:               "AFP",
