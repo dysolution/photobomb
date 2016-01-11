@@ -44,7 +44,7 @@ func defineBullets() {
 		CreditLine:           fake.FullName(),
 		FileName:             fake.Word() + ".jpg",
 		Headline:             fake.Sentence(),
-		IptcCategory:         "S",
+		IPTCCategory:         "S",
 		SiteDestination:      []string{"Editorial", "WireImage.com"},
 		Source:               "AFP",
 	}
