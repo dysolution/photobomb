@@ -20,6 +20,7 @@ func makeBomb(name string, bullets ...Bullet) {
 		bs = append(bs, bullet)
 	}
 	bombs[name] = Bomb{
+		Name:    name,
 		Bullets: bs,
 	}
 }

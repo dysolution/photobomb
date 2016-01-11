@@ -54,7 +54,9 @@ func (b *Bullet) String() string {
 //   2. get the metadata for a batch
 //   3. upload a contribution to the batch
 type Bomb struct {
-	Bullets []Bullet `json:"bullets"`
+	Name      string    `json:"name"`
+	Bullets   []Bullet  `json:"bullets"`
+	StartTime time.Time `json:"-"`
 }
 
 // Drop iterates through the Bullets within a bomb, fires all of them, and
@@ -105,4 +107,18 @@ func NewRaid(bombs ...Bomb) Raid {
 		payload = append(payload, bomb)
 	}
 	return Raid{time.Now(), payload}
+}
+
+type SimpleBullet struct {
+	Name string `json:"name"`
+}
+
+type SimpleBomb struct {
+	Name    string         `json:"name"`
+	Bullets []SimpleBullet `json:"bullets"`
+}
+
+type SimpleRaid struct {
+	StartTime time.Time    `json:"start_time"`
+	Bombs     []SimpleBomb `json:"bombs"`
 }
