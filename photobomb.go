@@ -28,7 +28,9 @@ func check(e error) {
 
 func loadConfig(path string) Raid {
 	fi, err := os.Stat(path)
-	check(err)
+	if err != nil {
+		return ExampleConfig()
+	}
 	if fi.Size() == 0 {
 		// The user has probably tried to redirect "example" output, e.g.,
 		// photobomb example > config.json, which zeroes out config.json, so

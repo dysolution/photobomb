@@ -89,8 +89,7 @@ func main() {
 			log.SetFormatter(&log.JSONFormatter{})
 		}
 
-		// config = loadConfig(c.String("config"))
-		config = ExampleConfig()
+		config = loadConfig(c.String("config"))
 		configJSON, err := json.Marshal(config)
 		check(err)
 		log.Debugf("configuration: %s", configJSON)
