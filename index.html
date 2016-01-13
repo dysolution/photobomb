@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="UTF-8">
+	<title>{{.AppName}}</title>
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.1.1/foundation.min.css">
+
+	<style type="text/css">
+    div#leftcolumn { padding-left: 30px; }
+    div#rightcolumn {
+      float: right;
+      margin-right: 30px;
+      }
+	  h1 {
+      background-color: black;
+      color: white;
+      font-size: 2em;
+      padding: 5px 30px;
+      margin-bottom: 30px;
+      }
+      h2 { font-size: 1.7em; }
+    pre { line-height: 1.2em; }
+	</style>
+
+  </head>
+  <body>
+	<h1>photobomb</h1>
+  <div id="rightcolumn">
+
+    <div>
+      <h2>routes</h2>
+      <table>
+      <tr><th>Path</th><th>Action<th></tr>
+        {{range $path, $helpText := .Routes}}
+        <tr>
+        <td><a href="{{ $path }}">{{ $path }}</a></td>
+        <td>{{ $helpText }}</td>
+        </tr>
+        {{end}}
+      </table>
+    </div>
+
+    <div>
+      <h2>stats</h2>
+      <table>
+        <tr>
+        <td>uptime</td>
+        <td>{{ .Foo }}</td>
+        </tr>
+      </table>
+    </div>
+
+  </div>
+
+	<div id="leftcolumn">
+
+	  <div>
+      <h2>configuration</h2>
+	    <pre>{{ .Config }}</pre>
+    </div>
+
+	</div>
+  </body>
+</html>
