@@ -27,49 +27,9 @@ func status(w http.ResponseWriter, r *http.Request) {
 		"path":   r.URL.Path,
 	}).Info()
 
-	const tpl = `
-<!DOCTYPE html>
-<html>
-	<head>
-		<meta charset="UTF-8">
-		<title>{{.AppName}}</title>
-	</head>
-	<body>
-	  <h1>photobomb</h1>
-	  <div>
-		<h2>request</h2>
-	    <pre>{{ .Request.RemoteAddr }}</pre>
-      </div>
-	  <div>
-		<h2>routes</h2>
-		<table>
-		  <tr><th>Path</th><th>Action<th></tr>
-			{{range $path, $helpText := .Routes}}
-			<tr>
-			  <td><a href="{{ $path }}">{{ $path }}</a></td>
-			  <td>{{ $helpText }}</td>
-			</tr>
-			{{end}}
-		</table>
-      </div>
+	t, err := template.ParseFiles("index.html")
+	check(err)
 
-      <div>
-		<h2>stats</h2>
-		<table>
-			<tr>
-			  <td>uptime</td>
-			  <td>{{ .Foo }}</td>
-			</tr>
-		</table>
-	  </div>
-	  <div>
-		<h2>configuration</h2>
-		<pre>{{ .Config }}</pre>
-      </div>
-	</body>
-</html>`
-
-	t, err := template.New("webpage").Parse(tpl)
 	routes := make(map[string]string)
 	routes["/"] = "display this message"
 	routes["/example"] = "display an example config"
@@ -107,6 +67,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 func showExampleConfig(w http.ResponseWriter, r *http.Request) {
 	output, err := json.MarshalIndent(ExampleConfig(), "", "    ")
 	check(err)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(output)
 }
 
@@ -120,6 +81,7 @@ func showConfig(w http.ResponseWriter, r *http.Request) {
 
 	output, err := json.MarshalIndent(simpleConfig, "", "    ")
 	check(err)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(output)
 }
 
