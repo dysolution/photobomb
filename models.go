@@ -35,7 +35,7 @@ func (b *Bullet) Deploy() (sdk.DeserializedObject, error) {
 	case "PUT", "put":
 		return b.client.Update(b.Payload), nil
 	case "DELETE", "delete":
-		return b.client.Delete(b.URL), nil
+		return b.client.DeleteFromObject(b.Payload), nil
 	}
 	return sdk.DeserializedObject{}, errors.New("undefined method")
 }

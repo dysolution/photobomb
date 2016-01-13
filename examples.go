@@ -37,7 +37,7 @@ func defineBullets() {
 		SubmissionType: "getty_creative_video",
 	})
 
-	bullet("delete_last_batch", "DELETE", lastBatch().Path(), nil)
+	bullet("delete_last_batch", "DELETE", "", lastBatch())
 
 	badBatch := sdk.Batch{ID: -1}
 	bullet("get_invalid_batch", "GET", badBatch.Path(), badBatch)
