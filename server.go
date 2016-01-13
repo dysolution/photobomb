@@ -9,11 +9,23 @@ import (
 	log "github.com/Sirupsen/logrus"
 )
 
+func attack(w http.ResponseWriter, r *http.Request) {
+	log.Debugf("attack called")
+	for {
+		log.Infof("conducting raid...")
+		config.Conduct()
+		log.Infof("sleeping...")
+		time.Sleep(5 * time.Second)
+	}
+}
+
 func runServer() {
 	http.HandleFunc("/", status)
-	http.HandleFunc("/example", showExampleConfig)
+	http.HandleFunc("/attack", attack)
 	http.HandleFunc("/config", showConfig)
-	http.HandleFunc("/execute", execute)
+	http.HandleFunc("/example", showExampleConfig)
+	http.HandleFunc("/once", once)
+	http.HandleFunc("/warning_shot", once)
 	// TODO http.HandleFunc("/refresh_token", refreshToken)
 
 	tcpSocket := ":8080"
@@ -35,7 +47,9 @@ func status(w http.ResponseWriter, r *http.Request) {
 	routes["/"] = "display this message"
 	routes["/example"] = "display an example config"
 	routes["/config"] = "display the current config"
-	routes["/execute"] = "execute the current config"
+	routes["/once"] = "execute the current config once"
+	routes["/warning_shot"] = "execute the current config once"
+	routes["/attack"] = "execute the current config indefinitely"
 
 	configJSON, err := json.Marshal(config)
 	check(err)
@@ -86,7 +100,7 @@ func showConfig(w http.ResponseWriter, r *http.Request) {
 	w.Write(output)
 }
 
-func execute(w http.ResponseWriter, r *http.Request) {
+func once(w http.ResponseWriter, r *http.Request) {
 	raid := config
 	summary := raid.Conduct()
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
