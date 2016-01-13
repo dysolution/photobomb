@@ -27,6 +27,7 @@ type Bullet struct {
 
 // Deploy sets the Bullet in motion.
 func (b *Bullet) Deploy() (sdk.DeserializedObject, error) {
+	log.Debugf("%s was deployed", b.Name)
 	switch b.Method {
 	case "GET", "get":
 		return b.client.Get(b.URL), nil
