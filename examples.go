@@ -25,6 +25,10 @@ func makeBomb(name string, bullets ...Bullet) {
 	}
 }
 
+func lastBatch() sdk.Batch {
+	return client.Get(sdk.Batches).Last()
+}
+
 func defineBullets() {
 	bullet("get_batches", "GET", sdk.Batches, nil)
 
@@ -32,6 +36,8 @@ func defineBullets() {
 		SubmissionName: appID + ": " + fake.FullName(),
 		SubmissionType: "getty_creative_video",
 	})
+
+	bullet("delete_last_batch", "DELETE", lastBatch().Path(), nil)
 
 	badBatch := sdk.Batch{ID: -1}
 	bullet("get_invalid_batch", "GET", badBatch.Path(), badBatch)
@@ -70,10 +76,20 @@ func defineBullets() {
 func ExampleConfig() Raid {
 	defineBullets()
 
+	makeBomb("create_batch",
+		bullets["create_batch"],
+	)
+	makeBomb("delete_last_batch",
+		bullets["delete_last_batch"],
+	)
 	makeBomb("create_and_confirm_batch",
 		bullets["get_batches"],
 		bullets["create_batch"],
 		bullets["get_batches"],
+	)
+	makeBomb("create_and_delete_batch",
+		bullets["create_batch"],
+		bullets["delete_last_batch"],
 	)
 	makeBomb("get_invalid_batches",
 		bullets["get_invalid_batch"],
@@ -87,9 +103,7 @@ func ExampleConfig() Raid {
 	)
 
 	return NewRaid(
-		bombs["create_and_confirm_batch"],
-		bombs["get_invalid_batches"],
-		bombs["create_and_confirm_photo"],
-		bombs["upload_a_release"],
+		bombs["create_batch"],
+		bombs["delete_last_batch"],
 	)
 }
