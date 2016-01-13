@@ -14,6 +14,7 @@ func runServer() {
 	http.HandleFunc("/example", showExampleConfig)
 	http.HandleFunc("/config", showConfig)
 	http.HandleFunc("/execute", execute)
+	// TODO http.HandleFunc("/refresh_token", refreshToken)
 
 	tcpSocket := ":8080"
 	log.Infof("listening on %s", tcpSocket)
