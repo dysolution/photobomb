@@ -105,5 +105,10 @@ func ExampleConfig() Raid {
 	return NewRaid(
 		bombs["create_batch"],
 		bombs["delete_last_batch"],
+		// bombs["create_and_confirm_batch"],
+		// bombs["create_and_delete_batch"],
+		bombs["get_invalid_batches"],
+		bombs["create_and_confirm_photo"],
+		bombs["upload_a_release"],
 	)
 }
