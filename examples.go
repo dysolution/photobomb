@@ -40,6 +40,13 @@ func defineBullets() {
 
 	bullet("delete_last_batch", "DELETE", "", lastBatch())
 
+	newBatchData := sdk.Batch{
+		ID:             86102,
+		SubmissionName: "updated headline",
+		Note:           "updated note",
+	}
+	bullet("update_a_batch", "PUT", "", newBatchData)
+
 	badBatch := sdk.Batch{ID: -1}
 	bullet("get_invalid_batch", "GET", badBatch.Path(), badBatch)
 
@@ -77,6 +84,11 @@ func defineBullets() {
 func ExampleConfig() Raid {
 	defineBullets()
 
+	makeBomb("batch",
+		bullets["create_batch"],
+		bullets["get_a_batch"],
+		bullets["update_a_batch"],
+	)
 	makeBomb("create_batch",
 		bullets["create_batch"],
 	)
@@ -85,6 +97,9 @@ func ExampleConfig() Raid {
 	)
 	makeBomb("get_batch",
 		bullets["get_a_batch"],
+	)
+	makeBomb("update_batch",
+		bullets["update_a_batch"],
 	)
 	makeBomb("create_and_confirm_batch",
 		bullets["get_batches"],
@@ -107,7 +122,8 @@ func ExampleConfig() Raid {
 	)
 
 	return NewRaid(
-		bombs["get_batch"],
+		bombs["batch"],
+		// bombs["get_batch"],
 		// bombs["create_batch"],
 		// bombs["delete_last_batch"],
 		// bombs["create_and_confirm_batch"],
