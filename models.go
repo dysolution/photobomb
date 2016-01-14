@@ -29,7 +29,7 @@ type Bullet struct {
 func (b *Bullet) Deploy() (*sdk.FulfilledRequest, error) {
 	switch b.Method {
 	case "GET", "get":
-		_, fRequest, err := b.client.GetWithMetadata(b.Payload)
+		fRequest, err := b.client.VerboseGet(b.Payload)
 		if err != nil {
 			log.Errorf("%s.Deploy: %v", b.Name, err)
 			return &sdk.FulfilledRequest{}, err
