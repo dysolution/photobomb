@@ -31,6 +31,7 @@ func lastBatch() sdk.Batch {
 
 func defineBullets() {
 	bullet("get_batches", "GET", sdk.Batches, nil)
+	bullet("get_a_batch", "GET", "", sdk.Batch{ID: 86102})
 
 	bullet("create_batch", "POST", sdk.Batches, sdk.Batch{
 		SubmissionName: appID + ": " + fake.FullName(),
@@ -82,6 +83,9 @@ func ExampleConfig() Raid {
 	makeBomb("delete_last_batch",
 		bullets["delete_last_batch"],
 	)
+	makeBomb("get_batch",
+		bullets["get_a_batch"],
+	)
 	makeBomb("create_and_confirm_batch",
 		bullets["get_batches"],
 		bullets["create_batch"],
@@ -103,12 +107,13 @@ func ExampleConfig() Raid {
 	)
 
 	return NewRaid(
-		bombs["create_batch"],
-		bombs["delete_last_batch"],
+		bombs["get_batch"],
+		// bombs["create_batch"],
+		// bombs["delete_last_batch"],
 		// bombs["create_and_confirm_batch"],
 		// bombs["create_and_delete_batch"],
-		bombs["get_invalid_batches"],
-		bombs["create_and_confirm_photo"],
-		bombs["upload_a_release"],
+		// bombs["get_invalid_batches"],
+		// bombs["create_and_confirm_photo"],
+		// bombs["upload_a_release"],
 	)
 }
