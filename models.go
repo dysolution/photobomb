@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 	sdk "github.com/dysolution/espsdk"
@@ -89,20 +91,36 @@ type Raid struct {
 	Bombs []Bomb `json:"bombs"`
 }
 
-// Conduct iterates through the Bombs in a Raid's Payload, dropping each of
-// them, and then returns a summary of the results.
-func (r *Raid) Conduct() ([]byte, error) {
-	var raidSummary []byte
-	for _, bomb := range r.Bombs {
-		response, err := json.MarshalIndent(Drop(bomb), "", "  ")
-		if err != nil {
-			log.Errorf("Raid.Conduct(): %s", err)
-			return []byte{}, err
-		}
-		log.Debugf("%s", response)
-		raidSummary = append(raidSummary, response...)
+// Conduct concurrently drops all of the Bombs in a Raid's Payload and
+// returns a collection of the results.
+func (r *Raid) Conduct() ([]*sdk.FulfilledRequest, error) {
+	logID := "Raid.Conduct"
+	var allResults []*sdk.FulfilledRequest
+	var wg sync.WaitGroup
+	for i, bomb := range r.Bombs {
+		wg.Add(1)
+		bombID := i + 1
+		go func(bombID int) ([]*sdk.FulfilledRequest, error) {
+			defer wg.Done()
+
+			results, err := Drop(bomb)
+			if err != nil {
+				log.Errorf("Raid.Conduct(): %v", err)
+				return []*sdk.FulfilledRequest{}, err
+			}
+
+			for _, req := range results {
+				log.WithFields(log.Fields{
+					"bomb_id":       bombID,
+					"response_time": req.Result.Duration * time.Millisecond,
+					"status_code":   req.Result.Response.StatusCode,
+				}).Info(logID)
+				allResults = append(allResults, results...)
+			}
+			return allResults, nil
+		}(bombID)
 	}
-	return raidSummary, nil
+	return allResults, nil
 }
 
 func (r *Raid) String() string {

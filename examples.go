@@ -121,15 +121,22 @@ func ExampleConfig() Raid {
 		bullets["create_release"],
 	)
 
+	var smallRaid []Bomb
+	for i := 1; i <= 20; i++ {
+		smallRaid = append(smallRaid, bombs["get_batch"])
+	}
+
 	return NewRaid(
-		bombs["batch"],
-		// bombs["get_batch"],
-		// bombs["create_batch"],
-		// bombs["delete_last_batch"],
-		// bombs["create_and_confirm_batch"],
-		// bombs["create_and_delete_batch"],
-		// bombs["get_invalid_batches"],
-		// bombs["create_and_confirm_photo"],
-		// bombs["upload_a_release"],
+		smallRaid...,
+	// bombs["batch"],
+	// bombs["batch"],
+	// bombs["get_batch"],
+	// bombs["create_batch"],
+	// bombs["delete_last_batch"],
+	// bombs["create_and_confirm_batch"],
+	// bombs["create_and_delete_batch"],
+	// bombs["get_invalid_batches"],
+	// bombs["create_and_confirm_photo"],
+	// bombs["upload_a_release"],
 	)
 }
