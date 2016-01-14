@@ -90,7 +90,7 @@ type Raid struct {
 func (r *Raid) Conduct() ([]byte, error) {
 	var raidSummary []byte
 	for _, bomb := range r.Bombs {
-		response, err := json.MarshalIndent(Drop(bomb), "", "    ")
+		response, err := json.MarshalIndent(Drop(bomb), "", "  ")
 		if err != nil {
 			log.Errorf("Raid.Conduct(): %s", err)
 			return []byte{}, err

@@ -4,28 +4,25 @@ import (
 	"encoding/json"
 	"html/template"
 	"net/http"
+	"reflect"
+	"runtime"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
 )
 
-func attack(w http.ResponseWriter, r *http.Request) {
-	log.Debugf("attack called")
-	for {
-		log.Infof("conducting raid...")
-		config.Conduct()
-		log.Infof("sleeping...")
-		time.Sleep(5 * time.Second)
-	}
-}
+const sleepInterval = 5
+
+var inception = time.Now()
+var requestCount = 0
 
 func runServer() {
-	http.HandleFunc("/", status)
-	http.HandleFunc("/attack", attack)
-	http.HandleFunc("/config", showConfig)
-	http.HandleFunc("/example", showExampleConfig)
-	http.HandleFunc("/once", once)
-	http.HandleFunc("/warning_shot", once)
+	http.HandleFunc("/", middleware(status))
+	http.HandleFunc("/attack", middleware(attack))
+	http.HandleFunc("/config", middleware(showConfig))
+	http.HandleFunc("/example", middleware(showExampleConfig))
+	http.HandleFunc("/once", middleware(once))
+	http.HandleFunc("/warning_shot", middleware(once))
 	// TODO http.HandleFunc("/refresh_token", refreshToken)
 
 	tcpSocket := ":8080"
@@ -33,13 +30,28 @@ func runServer() {
 	http.ListenAndServe(tcpSocket, nil)
 }
 
-func status(w http.ResponseWriter, r *http.Request) {
-	log.WithFields(log.Fields{
-		"host":   r.RemoteAddr,
-		"method": r.Method,
-		"path":   r.URL.Path,
-	}).Info()
+func middleware(fn http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		requestCount += 1
+		name := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
+		log.WithFields(log.Fields{
+			"request_id": requestCount,
+			"name":       name,
+			"host":       r.RemoteAddr,
+			"method":     r.Method,
+			"path":       r.URL.Path,
+		}).Info()
+		defer log.WithFields(log.Fields{
+			"request_id":    requestCount,
+			"name":          name,
+			"response_time": time.Since(start),
+		}).Info()
+		fn(w, r)
+	}
+}
 
+func status(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("index.html")
 	check(err)
 
@@ -62,39 +74,43 @@ func status(w http.ResponseWriter, r *http.Request) {
 	check(err)
 
 	data := struct {
-		AppName string
-		Routes  map[string]string
-		Config  string
-		Foo     time.Duration
-		Request *http.Request
+		AppName      string
+		Routes       map[string]string
+		Config       string
+		Uptime       time.Duration
+		RequestCount int
+		Request      *http.Request
 	}{
-		AppName: appID,
-		Routes:  routes,
-		Config:  string(output),
-		Foo:     config.Duration(),
-		Request: r,
+		AppName:      appID,
+		Routes:       routes,
+		Config:       string(output),
+		Uptime:       time.Since(inception),
+		RequestCount: requestCount,
+		Request:      r,
 	}
 
 	err = t.Execute(w, data)
 	check(err)
 }
 
-func showExampleConfig(w http.ResponseWriter, r *http.Request) {
-	output, err := json.MarshalIndent(ExampleConfig(), "", "    ")
-	check(err)
-	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Write(output)
+func attack(w http.ResponseWriter, r *http.Request) {
+	for {
+		log.Infof("conducting raid")
+		config.Conduct()
+		log.Infof("sleeping for %d seconds", sleepInterval)
+		time.Sleep(sleepInterval * time.Second)
+	}
 }
 
 func showConfig(w http.ResponseWriter, r *http.Request) {
-	configJSON, err := json.Marshal(config)
+	configJSON, err := json.MarshalIndent(config, "", "  ")
 	check(err)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(configJSON)
+}
 
-	var simpleConfig SimpleRaid
-	err = json.Unmarshal(configJSON, &simpleConfig)
-	check(err)
-
-	output, err := json.MarshalIndent(simpleConfig, "", "    ")
+func showExampleConfig(w http.ResponseWriter, r *http.Request) {
+	output, err := json.MarshalIndent(ExampleConfig(), "", "    ")
 	check(err)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(output)
