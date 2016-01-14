@@ -26,19 +26,27 @@ type Bullet struct {
 }
 
 // Deploy sets the Bullet in motion.
-func (b *Bullet) Deploy() (sdk.DeserializedObject, error) {
-	log.Debugf("%s was deployed", b.Name)
+func (b *Bullet) Deploy() (*sdk.FulfilledRequest, error) {
 	switch b.Method {
 	case "GET", "get":
-		return b.client.Get(b.URL), nil
+		_, fRequest, err := b.client.GetWithMetadata(b.Payload)
+		if err != nil {
+			log.Errorf("%s.Deploy: %v", b.Name, err)
+			return &sdk.FulfilledRequest{}, err
+		}
+		log.WithFields(fRequest.Stats()).Infof("%s.Deploy", b.Name)
+		return fRequest, nil
 	case "POST", "post":
-		return b.client.Create(b.Payload), nil
+		b.client.Create(b.Payload)
+		return &sdk.FulfilledRequest{}, nil
 	case "PUT", "put":
-		return b.client.Update(b.Payload), nil
+		b.client.Update(b.Payload)
+		return &sdk.FulfilledRequest{}, nil
 	case "DELETE", "delete":
-		return b.client.DeleteFromObject(b.Payload), nil
+		b.client.DeleteFromObject(b.Payload)
+		return &sdk.FulfilledRequest{}, nil
 	}
-	return sdk.DeserializedObject{}, errors.New("undefined method")
+	return &sdk.FulfilledRequest{}, errors.New("undefined method")
 }
 
 func (b *Bullet) String() string {
@@ -62,11 +70,11 @@ type Bomb struct {
 
 // Drop iterates through the Bullets within a bomb, fires all of them, and
 // returns a summary of the results.
-func Drop(bomb Bomb) []sdk.DeserializedObject {
-	var summary []sdk.DeserializedObject
+func Drop(bomb Bomb) []*sdk.FulfilledRequest {
+	var summary []*sdk.FulfilledRequest
 	for _, bullet := range bomb.Bullets {
-		obj, _ := bullet.Deploy()
-		summary = append(summary, obj)
+		fRequest, _ := bullet.Deploy()
+		summary = append(summary, fRequest)
 	}
 	return summary
 }
@@ -79,15 +87,18 @@ type Raid struct {
 
 // Conduct iterates through the Bombs in a Raid's Payload, dropping each of
 // them, and then returns a summary of the results.
-func (r *Raid) Conduct() []byte {
+func (r *Raid) Conduct() ([]byte, error) {
 	var raidSummary []byte
 	for _, bomb := range r.Bombs {
 		response, err := json.MarshalIndent(Drop(bomb), "", "    ")
-		check(err)
+		if err != nil {
+			log.Errorf("Raid.Conduct(): %s", err)
+			return []byte{}, err
+		}
 		log.Debugf("%s", response)
 		raidSummary = append(raidSummary, response...)
 	}
-	return raidSummary
+	return raidSummary, nil
 }
 
 // Duration reports how much time has elapsed since the start of the Raid.

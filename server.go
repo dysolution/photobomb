@@ -102,7 +102,8 @@ func showConfig(w http.ResponseWriter, r *http.Request) {
 
 func once(w http.ResponseWriter, r *http.Request) {
 	raid := config
-	summary := raid.Conduct()
+	summary, err := raid.Conduct()
+	check(err)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(summary)
 }
