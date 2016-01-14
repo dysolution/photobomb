@@ -30,24 +30,29 @@ func runServer() {
 	http.ListenAndServe(tcpSocket, nil)
 }
 
-func middleware(fn http.HandlerFunc) http.HandlerFunc {
+func mw(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		requestCount += 1
 		name := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
 		log.WithFields(log.Fields{
-			"request_id": requestCount,
-			"name":       name,
 			"host":       r.RemoteAddr,
 			"method":     r.Method,
+			"name":       name,
 			"path":       r.URL.Path,
+			"request_id": requestCount,
 		}).Info()
-		defer log.WithFields(log.Fields{
-			"request_id":    requestCount,
+
+		fn(w, r)
+
+		log.WithFields(log.Fields{
+			"host":          r.RemoteAddr,
+			"method":        r.Method,
 			"name":          name,
+			"path":          r.URL.Path,
+			"request_id":    requestCount,
 			"response_time": time.Since(start),
 		}).Info()
-		fn(w, r)
 	}
 }
 
