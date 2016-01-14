@@ -17,12 +17,12 @@ var inception = time.Now()
 var requestCount = 0
 
 func runServer() {
-	http.HandleFunc("/", middleware(status))
-	http.HandleFunc("/attack", middleware(attack))
-	http.HandleFunc("/config", middleware(showConfig))
-	http.HandleFunc("/example", middleware(showExampleConfig))
-	http.HandleFunc("/once", middleware(once))
-	http.HandleFunc("/warning_shot", middleware(once))
+	http.HandleFunc("/", mw(status))
+	http.HandleFunc("/attack", mw(attack))
+	http.HandleFunc("/config", mw(showConfig))
+	http.HandleFunc("/example", mw(showExampleConfig))
+	http.HandleFunc("/once", mw(once))
+	http.HandleFunc("/warning_shot", mw(once))
 	// TODO http.HandleFunc("/refresh_token", refreshToken)
 
 	tcpSocket := ":8080"

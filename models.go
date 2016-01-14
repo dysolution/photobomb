@@ -70,17 +70,18 @@ type Bomb struct {
 }
 
 // Drop iterates through the Bullets within a bomb, fires all of them, and
-// returns a summary of the results.
-func Drop(bomb Bomb) []*sdk.FulfilledRequest {
-	var summary []*sdk.FulfilledRequest
+// returns a slice of the results.
+func Drop(bomb Bomb) ([]*sdk.FulfilledRequest, error) {
+	var results []*sdk.FulfilledRequest
 	for _, bullet := range bomb.Bullets {
 		result, err := bullet.Deploy()
 		if err != nil {
 			log.Errorf("Drop: %v", err)
+			return []*sdk.FulfilledRequest{}, err
 		}
-		summary = append(summary, result)
+		results = append(results, result)
 	}
-	return summary
+	return results, nil
 }
 
 // A Raid is a collection of bombs capable of reporting summary statistics.
