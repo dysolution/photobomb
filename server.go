@@ -122,9 +122,9 @@ func showExampleConfig(w http.ResponseWriter, r *http.Request) {
 }
 
 func once(w http.ResponseWriter, r *http.Request) {
-	raid := config
-	summary, err := raid.Conduct()
+	allResults, err := config.Conduct()
 	check(err)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
-	w.Write(summary)
+	output, err := json.MarshalIndent(allResults, "", "  ")
+	w.Write(output)
 }
