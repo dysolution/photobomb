@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"time"
 
 	log "github.com/Sirupsen/logrus"
 	sdk "github.com/dysolution/espsdk"
@@ -63,9 +62,8 @@ func (b *Bullet) String() string {
 //   2. get the metadata for a batch
 //   3. upload a contribution to the batch
 type Bomb struct {
-	Name      string    `json:"name"`
-	Bullets   []Bullet  `json:"bullets"`
-	StartTime time.Time `json:"-"`
+	Name    string   `json:"name"`
+	Bullets []Bullet `json:"bullets"`
 }
 
 // Drop iterates through the Bullets within a bomb, fires all of them, and
@@ -73,16 +71,18 @@ type Bomb struct {
 func Drop(bomb Bomb) []*sdk.FulfilledRequest {
 	var summary []*sdk.FulfilledRequest
 	for _, bullet := range bomb.Bullets {
-		fRequest, _ := bullet.Deploy()
-		summary = append(summary, fRequest)
+		result, err := bullet.Deploy()
+		if err != nil {
+			log.Errorf("Drop: %v", err)
+		}
+		summary = append(summary, result)
 	}
 	return summary
 }
 
 // A Raid is a collection of bombs capable of reporting summary statistics.
 type Raid struct {
-	StartTime time.Time `json:"-"`
-	Bombs     []Bomb    `json:"bombs"`
+	Bombs []Bomb `json:"bombs"`
 }
 
 // Conduct iterates through the Bombs in a Raid's Payload, dropping each of
@@ -101,11 +101,6 @@ func (r *Raid) Conduct() ([]byte, error) {
 	return raidSummary, nil
 }
 
-// Duration reports how much time has elapsed since the start of the Raid.
-func (r *Raid) Duration() time.Duration {
-	return time.Now().Sub(r.StartTime)
-}
-
 func (r *Raid) String() string {
 	out, err := json.MarshalIndent(r, "", "  ")
 	check(err)
@@ -118,7 +113,7 @@ func NewRaid(bombs ...Bomb) Raid {
 	for _, bomb := range bombs {
 		payload = append(payload, bomb)
 	}
-	return Raid{time.Now(), payload}
+	return Raid{Bombs: payload}
 }
 
 type SimpleBullet struct {
@@ -131,6 +126,5 @@ type SimpleBomb struct {
 }
 
 type SimpleRaid struct {
-	StartTime time.Time    `json:"start_time"`
-	Bombs     []SimpleBomb `json:"bombs"`
+	Bombs []SimpleBomb `json:"bombs"`
 }
