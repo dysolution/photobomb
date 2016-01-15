@@ -90,14 +90,14 @@ func status(w http.ResponseWriter, r *http.Request) {
 }
 
 func backoff(w http.ResponseWriter, r *http.Request) {
-	newInterval := interval / 1.618
-	intervalDelta <- interval - newInterval
+	newInterval := interval * 1.618
+	intervalDelta <- newInterval - interval
 	w.Write([]byte(fmt.Sprintf("backing off to %v", newInterval)))
 }
 
 func speedup(w http.ResponseWriter, r *http.Request) {
-	newInterval := interval * 1.618
-	intervalDelta <- interval - newInterval
+	newInterval := interval / 1.618
+	intervalDelta <- newInterval - interval
 	w.Write([]byte(fmt.Sprintf("speeding up to %v", newInterval)))
 }
 
