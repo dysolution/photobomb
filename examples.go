@@ -122,7 +122,7 @@ func ExampleConfig() Raid {
 	)
 
 	var smallRaid []Bomb
-	for i := 1; i <= 20; i++ {
+	for i := 1; i <= 2; i++ {
 		smallRaid = append(smallRaid, bombs["get_batch"])
 	}
 
