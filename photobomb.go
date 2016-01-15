@@ -20,6 +20,10 @@ var client sdk.Client
 var token sdk.Token
 var config Raid
 
+type Serializable interface {
+	Marshal() ([]byte, error)
+}
+
 func check(e error) {
 	if e != nil {
 		log.Fatal(e)
