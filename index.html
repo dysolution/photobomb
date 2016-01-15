@@ -32,6 +32,16 @@
   <div id="rightcolumn">
 
     <div>
+      <h2>stats</h2>
+      <table>
+        <tr> <td>status</td> <td>{{ if .Enabled }}attacking{{ else }}paused{{ end }}</td> </tr>
+        <tr> <td>uptime</td> <td>{{ .Uptime }}</td> </tr>
+        <tr> <td>requests</td> <td>{{ .RequestCount }}</td> </tr>
+        <tr> <td>raids</td> <td>{{ .RaidCount }}</td> </tr>
+      </table>
+    </div>
+
+    <div>
       <h2>routes</h2>
       <table>
       <tr><th>Path</th><th>Action<th></tr>
@@ -41,14 +51,6 @@
         <td>{{ $helpText }}</td>
         </tr>
         {{end}}
-      </table>
-    </div>
-
-    <div>
-      <h2>stats</h2>
-      <table>
-        <tr> <td>uptime</td> <td>{{ .Uptime }}</td> </tr>
-        <tr> <td>requests</td> <td>{{ .RequestCount }}</td> </tr>
       </table>
     </div>
 

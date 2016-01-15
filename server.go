@@ -13,8 +13,16 @@ import (
 
 const sleepInterval = 5
 
-var inception = time.Now()
+var inception time.Time
+var raidCount = 0
 var requestCount = 0
+var interval chan int
+var toggle = make(chan bool, 1)
+var enabled = true
+
+func init() {
+	inception = time.Now()
+}
 
 func runServer() {
 	http.HandleFunc("/", mw(status))
@@ -22,8 +30,29 @@ func runServer() {
 	http.HandleFunc("/config", mw(showConfig))
 	http.HandleFunc("/example", mw(showExampleConfig))
 	http.HandleFunc("/once", mw(once))
+	http.HandleFunc("/pause", mw(pause))
 	http.HandleFunc("/warning_shot", mw(once))
 	// TODO http.HandleFunc("/refresh_token", refreshToken)
+
+	go func() {
+		seconds := 5
+		log.Infof("initial interval: %d seconds", seconds)
+		for {
+			select {
+			case seconds := <-interval:
+				log.Infof("switching to %d second interval", seconds)
+			case enabled = <-toggle:
+			default:
+			}
+			if enabled {
+				log.Infof("conducting raid")
+				config.Conduct()
+				raidCount += 1
+				log.Infof("sleeping for %d seconds", seconds)
+				time.Sleep(time.Duration(seconds) * time.Second)
+			}
+		}
+	}()
 
 	tcpSocket := ":8080"
 	log.Infof("listening on %s", tcpSocket)
@@ -66,7 +95,8 @@ func status(w http.ResponseWriter, r *http.Request) {
 	routes["/config"] = "display the current config"
 	routes["/once"] = "execute the current config once"
 	routes["/warning_shot"] = "execute the current config once"
-	routes["/attack"] = "execute the current config indefinitely"
+	routes["/attack"] = "commence an attack"
+	routes["/pause"] = "pause an attack"
 
 	configJSON, err := json.Marshal(config)
 	check(err)
@@ -80,31 +110,43 @@ func status(w http.ResponseWriter, r *http.Request) {
 
 	data := struct {
 		AppName      string
-		Routes       map[string]string
 		Config       string
-		Uptime       time.Duration
-		RequestCount int
+		Enabled      bool
 		Request      *http.Request
+		RaidCount    int
+		RequestCount int
+		Routes       map[string]string
+		Uptime       time.Duration
 	}{
 		AppName:      appID,
-		Routes:       routes,
 		Config:       string(output),
-		Uptime:       time.Since(inception),
-		RequestCount: requestCount,
+		Enabled:      enabled,
 		Request:      r,
+		RaidCount:    raidCount,
+		RequestCount: requestCount,
+		Routes:       routes,
+		Uptime:       time.Since(inception),
 	}
 
 	err = t.Execute(w, data)
 	check(err)
 }
 
+func faster(w http.ResponseWriter, r *http.Request) {
+	interval <- 4
+	w.Write([]byte("faster"))
+}
+
+func pause(w http.ResponseWriter, r *http.Request) {
+	toggle <- false
+	log.Infof("paused")
+	w.Write([]byte("paused"))
+}
+
 func attack(w http.ResponseWriter, r *http.Request) {
-	for {
-		log.Infof("conducting raid")
-		config.Conduct()
-		log.Infof("sleeping for %d seconds", sleepInterval)
-		time.Sleep(sleepInterval * time.Second)
-	}
+	toggle <- true
+	log.Infof("attacking")
+	w.Write([]byte("attacking"))
 }
 
 func showConfig(w http.ResponseWriter, r *http.Request) {
