@@ -43,7 +43,7 @@ func httpd() {
 			select {
 			case enabled = <-toggle:
 			case d := <-intervalDelta:
-				log.Infof("changing interval by %d", d)
+				log.Infof("changing interval by %v seconds", d)
 				interval += d
 			default:
 			}
