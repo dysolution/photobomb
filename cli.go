@@ -116,7 +116,7 @@ func main() {
 			},
 		},
 	}
-	app.Action = func(c *cli.Context) { runServer() }
+	app.Action = func(c *cli.Context) { httpd() }
 
 	app.Run(os.Args)
 }
