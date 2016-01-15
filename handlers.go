@@ -50,6 +50,8 @@ func status(w http.ResponseWriter, r *http.Request) {
 	routes["/once"] = "execute the current config once"
 	routes["/warning_shot"] = "execute the current config once"
 	routes["/attack"] = "commence an attack"
+	routes["/speedup"] = "exponentially speed up the attack"
+	routes["/backoff"] = "exponentially slow down the attack"
 	routes["/cease_fire"] = "pause an attack"
 	routes["/pause"] = "pause an attack"
 

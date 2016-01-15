@@ -22,17 +22,19 @@ func init() {
 
 func httpd() {
 	http.HandleFunc("/", mw(status))
-	http.HandleFunc("/attack", mw(attack))
-	http.HandleFunc("/backoff", mw(backoff))
-	http.HandleFunc("/cease_fire", mw(pause))
 	http.HandleFunc("/config", mw(showConfig))
 	http.HandleFunc("/example", mw(showExampleConfig))
-	http.HandleFunc("/faster", mw(faster))
+
+	http.HandleFunc("/attack", mw(attack))
+	http.HandleFunc("/cease_fire", mw(pause))
 	http.HandleFunc("/once", mw(once))
 	http.HandleFunc("/pause", mw(pause))
-	http.HandleFunc("/slower", mw(slower))
-	http.HandleFunc("/speedup", mw(speedup))
 	http.HandleFunc("/warning_shot", mw(once))
+
+	http.HandleFunc("/faster", mw(faster))
+	http.HandleFunc("/slower", mw(slower))
+	http.HandleFunc("/backoff", mw(backoff))
+	http.HandleFunc("/speedup", mw(speedup))
 	// TODO http.HandleFunc("/refresh_token", refreshToken)
 
 	go func() {
