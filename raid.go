@@ -18,36 +18,54 @@ type Raid struct {
 	Bombs []Bomb `json:"bombs"`
 }
 
+type Squadron struct {
+	wg sync.WaitGroup
+}
+
+func NewSquadron() Squadron {
+	var wg sync.WaitGroup
+	return Squadron{wg}
+}
+
+func (s *Squadron) bombard(ch chan sdk.Result, bombardierID int, bomb Bomb) {
+	s.wg.Add(1)
+	defer s.wg.Done()
+
+	results, err := Drop(bomb)
+	if err != nil {
+		log.Errorf("Raid.Conduct(): %v", err)
+		ch <- sdk.Result{}
+	}
+
+	for weaponID, result := range results {
+		log.WithFields(logrus.Fields{
+			"bombardier_id": bombardierID,
+			"weapon_id":     weaponID,
+			"method":        result.Verb,
+			"path":          result.Path,
+			"response_time": result.Duration * time.Millisecond,
+			"status_code":   result.StatusCode,
+		}).Infof("sitrep %v:", bombardierID)
+
+		ch <- result
+	}
+}
+
 // Conduct concurrently drops all of the Bombs in a Raid's Payload and
 // returns a collection of the results.
 func (r *Raid) Conduct() ([]sdk.Result, error) {
-	logID := "Raid.Conduct"
 	var allResults []sdk.Result
-	var wg sync.WaitGroup
+	var reporterWg = sync.WaitGroup{}
+	var ch chan sdk.Result
+
 	for bombID, bomb := range r.Bombs {
-		wg.Add(1)
-		go func(bombID int, bomb Bomb) ([]sdk.Result, error) {
-			defer wg.Done()
-
-			results, err := Drop(bomb)
-			if err != nil {
-				log.Errorf("Raid.Conduct(): %v", err)
-				return []sdk.Result{}, err
-			}
-
-			for weaponID, result := range results {
-				log.WithFields(logrus.Fields{
-					"bomb_id":       bombID,
-					"weapon_id":     weaponID,
-					"method":        result.Verb,
-					"path":          result.Path,
-					"response_time": result.Duration * time.Millisecond,
-					"status_code":   result.StatusCode,
-				}).Info(logID)
-				allResults = append(allResults, results...)
-			}
-			return allResults, nil
-		}(bombID, bomb)
+		squadron := NewSquadron()
+		go squadron.bombard(ch, bombID, bomb)
+		go func() {
+			reporterWg.Add(1)
+			result := <-ch
+			allResults = append(allResults, result)
+		}()
 	}
 	return allResults, nil
 }
