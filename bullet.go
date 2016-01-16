@@ -51,6 +51,6 @@ func (b Bullet) Deploy() (sdk.Result, error) {
 
 func (b *Bullet) String() string {
 	out, err := json.MarshalIndent(b, "", "  ")
-	check(err)
+	tableFlip(err)
 	return fmt.Sprintf("%s", out)
 }

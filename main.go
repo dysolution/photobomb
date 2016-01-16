@@ -53,7 +53,7 @@ func setInterval(d float64) {
 	log.Debugf("new interval: %v", interval)
 }
 
-func check(e error) {
+func tableFlip(e error) {
 	if e != nil {
 		log.Fatal(e)
 	}
@@ -82,6 +82,6 @@ func loadConfig(path string) Raid {
 	if err := json.Unmarshal(file, &data); err != nil {
 		log.Fatal(err)
 	}
-	check(err)
+	tableFlip(err)
 	return data
 }

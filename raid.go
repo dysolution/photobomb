@@ -54,7 +54,7 @@ func (r *Raid) Conduct() ([]sdk.Result, error) {
 
 func (r *Raid) String() string {
 	out, err := json.MarshalIndent(r, "", "  ")
-	check(err)
+	tableFlip(err)
 	return string(out)
 }
 

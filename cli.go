@@ -91,7 +91,7 @@ func main() {
 
 		config = loadConfig(c.String("config"))
 		configJSON, err := json.Marshal(config)
-		check(err)
+		tableFlip(err)
 		log.Debugf("configuration: %s", configJSON)
 
 		return nil
@@ -102,7 +102,7 @@ func main() {
 			Usage: "print a JSON representation of the config",
 			Action: func(c *cli.Context) {
 				out, err := json.MarshalIndent(config, "", "    ")
-				check(err)
+				tableFlip(err)
 				fmt.Printf("%s\n", out)
 			},
 		},
@@ -111,7 +111,7 @@ func main() {
 			Usage: "print an example JSON configuration",
 			Action: func(c *cli.Context) {
 				out, err := json.MarshalIndent(ExampleConfig(), "", "    ")
-				check(err)
+				tableFlip(err)
 				fmt.Printf("%s\n", out)
 			},
 		},

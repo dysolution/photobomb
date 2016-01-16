@@ -41,7 +41,7 @@ func mw(fn http.HandlerFunc) http.HandlerFunc {
 }
 func status(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("index.html")
-	check(err)
+	tableFlip(err)
 
 	routes := make(map[string]string)
 	routes["/"] = "display this message"
@@ -58,14 +58,14 @@ func status(w http.ResponseWriter, r *http.Request) {
 	routes["/pause"] = "pause an attack"
 
 	configJSON, err := json.Marshal(config)
-	check(err)
+	tableFlip(err)
 
 	var simpleConfig SimpleRaid
 	err = json.Unmarshal(configJSON, &simpleConfig)
-	check(err)
+	tableFlip(err)
 
 	output, err := json.MarshalIndent(simpleConfig, "", "    ")
-	check(err)
+	tableFlip(err)
 
 	data := struct {
 		AppName      string
@@ -90,7 +90,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = t.Execute(w, data)
-	check(err)
+	tableFlip(err)
 }
 
 func backoff(w http.ResponseWriter, r *http.Request) {
@@ -129,21 +129,21 @@ func attack(w http.ResponseWriter, r *http.Request) {
 
 func showConfig(w http.ResponseWriter, r *http.Request) {
 	configJSON, err := json.MarshalIndent(config, "", "  ")
-	check(err)
+	tableFlip(err)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(configJSON)
 }
 
 func showExampleConfig(w http.ResponseWriter, r *http.Request) {
 	output, err := json.MarshalIndent(ExampleConfig(), "", "    ")
-	check(err)
+	tableFlip(err)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(output)
 }
 
 func once(w http.ResponseWriter, r *http.Request) {
 	allResults, err := config.Conduct()
-	check(err)
+	tableFlip(err)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	output, err := json.MarshalIndent(allResults, "", "  ")
 	w.Write(output)
