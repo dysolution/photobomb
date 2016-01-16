@@ -45,7 +45,7 @@ func (s *Squadron) bombard(ch chan sdk.Result, bombardierID int, bomb Bomb) {
 			"path":          result.Path,
 			"response_time": result.Duration * time.Millisecond,
 			"status_code":   result.StatusCode,
-		}).Infof("sitrep %v:", bombardierID)
+		}).Info()
 
 		ch <- result
 	}
