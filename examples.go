@@ -86,7 +86,7 @@ func defineWeapons() {
 // ExampleConfig returns an example of a complete configuration for the app.
 // When marshaled into JSON, this can be used as the contents of the config
 // file.
-func ExampleConfig() Raid {
+func ExampleConfig() airstrike.Raid {
 	defineWeapons()
 
 	armPlane("batch",
@@ -134,7 +134,7 @@ func ExampleConfig() Raid {
 		parallelRaid = append(parallelRaid, planes["create_and_delete_batch"])
 	}
 
-	return NewRaid(
+	return airstrike.NewRaid(
 		planes["create_and_delete_batch"],
 		deleteNewestBatch(),
 		// parallelRaid...,

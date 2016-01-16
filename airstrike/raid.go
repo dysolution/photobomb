@@ -1,11 +1,10 @@
-package main
+package airstrike
 
 import (
 	"encoding/json"
 	"sync"
 
 	sdk "github.com/dysolution/espsdk"
-	"github.com/dysolution/photobomb/airstrike"
 )
 
 type SimpleRaid struct {
@@ -19,7 +18,7 @@ type SimpleRaid struct {
 
 // A Raid is a collection of bombs capable of reporting summary statistics.
 type Raid struct {
-	Arsenals []airstrike.Arsenal `json:"planes"`
+	Arsenals []Arsenal `json:"planes"`
 }
 
 // Conduct concurrently drops all of the Bombs in a Raid's Payload and
@@ -30,7 +29,7 @@ func (r *Raid) Conduct() ([]sdk.Result, error) {
 	var ch chan sdk.Result
 
 	for arsenalID, arsenal := range r.Arsenals {
-		squadron := airstrike.NewSquadron()
+		squadron := NewSquadron()
 		go squadron.Bombard(ch, arsenalID, arsenal)
 		go func() {
 			reporterWg.Add(1)
@@ -43,13 +42,15 @@ func (r *Raid) Conduct() ([]sdk.Result, error) {
 
 func (r *Raid) String() string {
 	out, err := json.MarshalIndent(r, "", "  ")
-	tableFlip(err)
+	if err != nil {
+		return "error marshaling Raid"
+	}
 	return string(out)
 }
 
 // NewRaid initializes and returns a Raid, . It should be used in lieu of Raid literals.
-func NewRaid(arsenals ...airstrike.Arsenal) Raid {
-	var payload []airstrike.Arsenal
+func NewRaid(arsenals ...Arsenal) Raid {
+	var payload []Arsenal
 	for _, arsenal := range arsenals {
 		payload = append(payload, arsenal)
 	}

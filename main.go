@@ -9,6 +9,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	sdk "github.com/dysolution/espsdk"
+	"github.com/dysolution/photobomb/airstrike"
 	"github.com/x-cray/logrus-prefixed-formatter"
 )
 
@@ -18,7 +19,7 @@ const VERSION = "0.0.1"
 var appID = fmt.Sprintf("%s %s", NAME, VERSION)
 
 var client *sdk.Client
-var config Raid
+var config airstrike.Raid
 var enabled bool
 var inception time.Time
 var interval int
@@ -58,7 +59,7 @@ func tableFlip(e error) {
 	}
 }
 
-func loadConfig(path string) Raid {
+func loadConfig(path string) airstrike.Raid {
 	fi, err := os.Stat(path)
 	if err != nil {
 		return ExampleConfig()
@@ -77,7 +78,7 @@ func loadConfig(path string) Raid {
 		return ExampleConfig()
 	}
 
-	var data Raid
+	var data airstrike.Raid
 	if err := json.Unmarshal(file, &data); err != nil {
 		log.Fatal(err)
 	}

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
+	"github.com/dysolution/photobomb/airstrike"
 )
 
 func mw(fn http.HandlerFunc) http.HandlerFunc {
@@ -60,7 +61,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 	configJSON, err := json.Marshal(config)
 	tableFlip(err)
 
-	var simpleConfig SimpleRaid
+	var simpleConfig airstrike.SimpleRaid
 	err = json.Unmarshal(configJSON, &simpleConfig)
 	tableFlip(err)
 
