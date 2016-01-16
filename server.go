@@ -19,7 +19,7 @@ var log = logrus.New()
 
 func init() {
 	inception = time.Now()
-	enabled = true
+	enabled = false
 	interval = 5
 	log.Formatter = &prefixed.TextFormatter{TimestampFormat: time.RFC3339}
 }
