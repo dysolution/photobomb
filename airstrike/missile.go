@@ -1,4 +1,4 @@
-package main
+package airstrike
 
 import sdk "github.com/dysolution/espsdk"
 
@@ -6,7 +6,7 @@ import sdk "github.com/dysolution/espsdk"
 // known until runtime, such as the retrieval or deletion of the most
 // recently created Batch.
 type Missile struct {
-	client    *sdk.Client
+	Client    *sdk.Client
 	Name      string                     `json:"name"`
 	Operation func() (sdk.Result, error) `json:"-"`
 }

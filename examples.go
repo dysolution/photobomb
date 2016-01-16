@@ -26,8 +26,8 @@ func armPlane(name string, weapons ...airstrike.Armed) {
 	}
 }
 
-func foo() Missile {
-	return Missile{client, "delete_last_batch", client.DeleteLastBatch}
+func foo() airstrike.Missile {
+	return airstrike.Missile{client, "delete_last_batch", client.DeleteLastBatch}
 }
 
 func deleteNewestBatch() airstrike.Arsenal {
