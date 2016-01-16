@@ -33,7 +33,7 @@ func (b Bomb) Fire() (sdk.Result, error) {
 	case "GET", "get":
 		return b.handler(b.Client.VerboseGet)
 	case "POST", "post":
-		return b.handler(b.Client.VerboseCreate)
+		return b.handler(b.Client.Create)
 	case "PUT", "put":
 		return b.handler(b.Client.VerboseUpdate)
 	case "DELETE", "delete":
