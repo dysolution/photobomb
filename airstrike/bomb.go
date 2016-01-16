@@ -1,4 +1,4 @@
-package main
+package airstrike
 
 import (
 	"errors"
@@ -15,7 +15,7 @@ import (
 // action, e.g., delete the most-recently-created Submission Batch, you should
 // use a Missile instead.
 type Bomb struct {
-	client  *sdk.Client
+	Client  *sdk.Client
 	Name    string         `json:"name"`
 	Method  string         `json:"method"`
 	URL     string         `json:"url"`
@@ -31,13 +31,13 @@ func (b *Bomb) String() string {
 func (b Bomb) Fire() (sdk.Result, error) {
 	switch b.Method {
 	case "GET", "get":
-		return b.handler(b.client.VerboseGet)
+		return b.handler(b.Client.VerboseGet)
 	case "POST", "post":
-		return b.handler(b.client.VerboseCreate)
+		return b.handler(b.Client.VerboseCreate)
 	case "PUT", "put":
-		return b.handler(b.client.VerboseUpdate)
+		return b.handler(b.Client.VerboseUpdate)
 	case "DELETE", "delete":
-		return b.handler(b.client.VerboseDelete)
+		return b.handler(b.Client.VerboseDelete)
 	}
 	msg := fmt.Sprintf("%s.Deploy: undefined method: %s", b.Name, b.Method)
 	return sdk.Result{}, errors.New(msg)

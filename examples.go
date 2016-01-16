@@ -12,7 +12,7 @@ var weapons = make(map[string]airstrike.Armed)
 var planes = make(map[string]airstrike.Arsenal)
 
 func makeBomb(name string, method string, url string, payload sdk.RESTObject) {
-	weapons[name] = Bomb{client, name, method, url, payload}
+	weapons[name] = airstrike.Bomb{client, name, method, url, payload}
 }
 
 func armPlane(name string, weapons ...airstrike.Armed) {

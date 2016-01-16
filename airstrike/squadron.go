@@ -1,4 +1,4 @@
-package main
+package airstrike
 
 import (
 	"sync"
@@ -6,7 +6,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	sdk "github.com/dysolution/espsdk"
-	"github.com/dysolution/photobomb/airstrike"
 )
 
 type Squadron struct {
@@ -18,11 +17,11 @@ func NewSquadron() Squadron {
 	return Squadron{wg}
 }
 
-func (s *Squadron) bombard(ch chan sdk.Result, pilotID int, arsenal airstrike.Arsenal) {
+func (s *Squadron) Bombard(ch chan sdk.Result, pilotID int, arsenal Arsenal) {
 	s.wg.Add(1)
 	defer s.wg.Done()
 
-	results, err := airstrike.Deploy(arsenal)
+	results, err := Deploy(arsenal)
 	if err != nil {
 		log.Errorf("Raid.Conduct(): %v", err)
 		ch <- sdk.Result{}

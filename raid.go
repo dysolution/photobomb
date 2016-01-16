@@ -30,8 +30,8 @@ func (r *Raid) Conduct() ([]sdk.Result, error) {
 	var ch chan sdk.Result
 
 	for arsenalID, arsenal := range r.Arsenals {
-		squadron := NewSquadron()
-		go squadron.bombard(ch, arsenalID, arsenal)
+		squadron := airstrike.NewSquadron()
+		go squadron.Bombard(ch, arsenalID, arsenal)
 		go func() {
 			reporterWg.Add(1)
 			result := <-ch
