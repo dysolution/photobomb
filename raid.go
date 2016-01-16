@@ -57,12 +57,3 @@ func (r *Raid) String() string {
 	tableFlip(err)
 	return string(out)
 }
-
-// NewRaid initializes and returns a Raid, . It should be used in lieu of Raid literals.
-func NewRaid(bombs ...Bomb) Raid {
-	var payload []Bomb
-	for _, bomb := range bombs {
-		payload = append(payload, bomb)
-	}
-	return Raid{Bombs: payload}
-}

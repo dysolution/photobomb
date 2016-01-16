@@ -130,20 +130,22 @@ func ExampleConfig() Raid {
 		parallelRaid = append(parallelRaid, getBomb())
 	}
 
-	return NewRaid(
-		// parallelRaid...,
-		// bombs["batch"],
-		// bombs["batch"],
-		// bombs["get_batch"],
-		// bombs["create_batch"],
-		// bombs["create_batch"],
-		// bombs["create_batch"],
-		getBomb(),
-	// bombs["delete_last_batch"],
-	// bombs["create_and_confirm_batch"],
-	// bombs["create_and_delete_batch"],
-	// bombs["get_invalid_batches"],
-	// bombs["create_and_confirm_photo"],
-	// bombs["upload_a_release"],
-	)
+	return Raid{
+		Bombs: []Bomb{
+			getBomb(),
+			// parallelRaid...,
+			// bombs["batch"],
+			// bombs["batch"],
+			// bombs["get_batch"],
+			// bombs["create_batch"],
+			// bombs["create_batch"],
+			// bombs["create_batch"],
+			// bombs["delete_last_batch"],
+			// bombs["create_and_confirm_batch"],
+			// bombs["create_and_delete_batch"],
+			// bombs["get_invalid_batches"],
+			// bombs["create_and_confirm_photo"],
+			// bombs["upload_a_release"],
+		},
+	}
 }
