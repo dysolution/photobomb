@@ -8,18 +8,18 @@ import (
 )
 
 var weapons = make(map[string]Armed)
-var arsenals = make(map[string]Arsenal)
+var planes = make(map[string]Arsenal)
 
-func bullet(name string, method string, url string, payload sdk.RESTObject) {
+func makeBomb(name string, method string, url string, payload sdk.RESTObject) {
 	weapons[name] = Bomb{client, name, method, url, payload}
 }
 
-func makeArsenal(name string, weapons ...Armed) {
+func armPlane(name string, weapons ...Armed) {
 	var ordnance []Armed
 	for _, weapon := range weapons {
 		ordnance = append(ordnance, weapon)
 	}
-	arsenals[name] = Arsenal{
+	planes[name] = Arsenal{
 		Name:    name,
 		Weapons: ordnance,
 	}
@@ -35,11 +35,11 @@ func deleteNewestBatch() Arsenal {
 		Weapons: []Armed{foo()}}
 }
 
-func defineBullets() {
-	bullet("get_batches", "GET", sdk.Batches, nil)
-	bullet("get_a_batch", "GET", "", sdk.Batch{ID: 86102})
+func defineWeapons() {
+	makeBomb("get_batches", "GET", sdk.Batches, nil)
+	makeBomb("get_a_batch", "GET", "", sdk.Batch{ID: 86102})
 
-	bullet("create_batch", "POST", sdk.Batches, sdk.Batch{
+	makeBomb("create_batch", "POST", sdk.Batches, sdk.Batch{
 		SubmissionName: appID + ": " + fake.FullName(),
 		SubmissionType: "getty_creative_video",
 	})
@@ -49,10 +49,10 @@ func defineBullets() {
 		SubmissionName: "updated headline",
 		Note:           "updated note",
 	}
-	bullet("update_a_batch", "PUT", "", newBatchData)
+	makeBomb("update_a_batch", "PUT", "", newBatchData)
 
 	badBatch := sdk.Batch{ID: -1}
-	bullet("get_invalid_batch", "GET", badBatch.Path(), badBatch)
+	makeBomb("get_invalid_batch", "GET", badBatch.Path(), badBatch)
 
 	edPhoto := sdk.Contribution{
 		SubmissionBatchID:    86102,
@@ -67,10 +67,10 @@ func defineBullets() {
 		SiteDestination:      []string{"Editorial", "WireImage.com"},
 		Source:               "AFP",
 	}
-	bullet("create_photo", "POST", edPhoto.Path(), edPhoto)
+	makeBomb("create_photo", "POST", edPhoto.Path(), edPhoto)
 
 	edBatch := sdk.Batch{ID: 86103}
-	bullet("get_photos", "GET", edBatch.Path(), edBatch)
+	makeBomb("get_photos", "GET", edBatch.Path(), edBatch)
 
 	release := sdk.Release{
 		SubmissionBatchID: 86103,
@@ -79,21 +79,21 @@ func defineBullets() {
 		FilePath:          "submission/releases/batch_86103/24780225369200015_some_property.jpg",
 		MimeType:          "image/jpeg",
 	}
-	bullet("create_release", "POST", release.Path(), release)
+	makeBomb("create_release", "POST", release.Path(), release)
 }
 
 // ExampleConfig returns an example of a complete configuration for the app.
 // When marshaled into JSON, this can be used as the contents of the config
 // file.
 func ExampleConfig() Raid {
-	defineBullets()
+	defineWeapons()
 
-	makeArsenal("batch",
+	armPlane("batch",
 		weapons["create_batch"],
 		weapons["get_a_batch"],
 		weapons["update_a_batch"],
 	)
-	makeArsenal("create_batch",
+	armPlane("create_batch",
 		weapons["create_batch"],
 	)
 	// makeArsenal("delete_last_batch",
@@ -101,40 +101,40 @@ func ExampleConfig() Raid {
 	// 	getMissile(),
 	// )
 	// bombs["delete_newest_batch"] = getBomb()
-	makeArsenal("get_batch",
+	armPlane("get_batch",
 		weapons["get_a_batch"],
 	)
-	makeArsenal("update_batch",
+	armPlane("update_batch",
 		weapons["update_a_batch"],
 	)
-	makeArsenal("create_and_confirm_batch",
+	armPlane("create_and_confirm_batch",
 		weapons["get_batches"],
 		weapons["create_batch"],
 		weapons["get_batches"],
 	)
-	makeArsenal("create_and_delete_batch",
+	armPlane("create_and_delete_batch",
 		weapons["create_batch"],
 		foo(),
 	)
-	makeArsenal("get_invalid_batches",
+	armPlane("get_invalid_batches",
 		weapons["get_invalid_batch"],
 	)
-	makeArsenal("create_and_confirm_photo",
+	armPlane("create_and_confirm_photo",
 		weapons["create_photo"],
 		weapons["get_photos"],
 	)
-	makeArsenal("upload_a_release",
+	armPlane("upload_a_release",
 		weapons["create_release"],
 	)
 
 	var parallelRaid []Arsenal
 	for i := 1; i <= 3; i++ {
 		// parallelRaid = append(parallelRaid, bombs["get_batch"])
-		parallelRaid = append(parallelRaid, arsenals["create_and_delete_batch"])
+		parallelRaid = append(parallelRaid, planes["create_and_delete_batch"])
 	}
 
 	return NewRaid(
-		arsenals["create_and_delete_batch"],
+		planes["create_and_delete_batch"],
 		deleteNewestBatch(),
 		// parallelRaid...,
 	// bombs["batch"],
