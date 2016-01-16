@@ -18,8 +18,7 @@ const VERSION = "0.0.1"
 
 var appID = fmt.Sprintf("%s %s", NAME, VERSION)
 
-var client sdk.Client
-var token sdk.Token
+var client *sdk.Client
 var config Raid
 var enabled bool
 var inception time.Time
