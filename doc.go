@@ -1,11 +1,12 @@
-/* Photobomb conducts workflow tests triggered by requests to its web server.
+/*
+Photobomb conducts workflow tests triggered by requests to its web server.
 
 Load-testing or stress-testing an API can be imagined as an air strike, which
 consists of:
 
-1. a Mission that describes when and what ordnance will be deployed
-2. a Squadron of planes that can simultaneously deploy their Arsenals
-3. an Arsenal on each plane consisting of Bombs and Missiles
+    1. a Mission that describes when and what ordnance will be deployed
+    2. a Squadron of planes that can simultaneously deploy their Arsenals
+    3. an Arsenal on each plane consisting of Bombs and Missiles
 
 The default mission (1) causes the configured squadron to simultaneously deploy
 their configured arsenals every 5 seconds. Some ordnance will hit its target
@@ -27,5 +28,4 @@ provided a function that can be lazy-evaluated when Missile.Fire() occurs.
 Unlike a Bomb, Missiles need to be "guided" in this fashion to ensure they
 will hit their target. As with Bombs, 4xx responses are reported as errors.
 */
-
 package main
