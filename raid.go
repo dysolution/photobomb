@@ -36,11 +36,14 @@ func (r *Raid) Conduct() ([]*sdk.Result, error) {
 				return []*sdk.Result{}, err
 			}
 
-			for _, req := range results {
-				log.WithFields(log.Fields{
+			for weaponID, result := range results {
+				log.WithFields(logrus.Fields{
 					"bomb_id":       bombID,
-					"response_time": req.VerboseResult.Duration * time.Millisecond,
-					"status_code":   req.VerboseResult.Response.StatusCode,
+					"weapon_id":     weaponID,
+					"method":        result.Verb,
+					"path":          result.Path,
+					"response_time": result.Duration * time.Millisecond,
+					"status_code":   result.StatusCode,
 				}).Info(logID)
 				allResults = append(allResults, results...)
 			}

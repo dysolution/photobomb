@@ -7,26 +7,28 @@ import (
 	"github.com/icrowley/fake"
 )
 
-var bullets = make(map[string]Bullet)
+var weapons = make(map[string]Deployable)
 var bombs = make(map[string]Bomb)
 
 func bullet(name string, method string, url string, payload sdk.RESTObject) {
-	bullets[name] = Bullet{&client, name, method, url, payload}
+	weapons[name] = Bullet{client, name, method, url, payload}
 }
 
-func makeBomb(name string, bullets ...Bullet) {
-	var bs []Bullet
-	for _, bullet := range bullets {
-		bs = append(bs, bullet)
+func makeBomb(name string, weapons ...Deployable) {
+	var ordnance []Deployable
+	for _, weapon := range weapons {
+		ordnance = append(ordnance, weapon)
 	}
 	bombs[name] = Bomb{
 		Name:    name,
-		Bullets: bs,
+		Weapons: ordnance,
 	}
 }
 
-func lastBatch() sdk.Batch {
-	return client.Get(sdk.Batches).Last()
+func getBomb() Bomb {
+	return Bomb{
+		Name:    "delete_newest_batch",
+		Weapons: []Deployable{Missile{client, "delete_last_batch", client.DeleteLastBatch}}}
 }
 
 func defineBullets() {
@@ -37,8 +39,6 @@ func defineBullets() {
 		SubmissionName: appID + ": " + fake.FullName(),
 		SubmissionType: "getty_creative_video",
 	})
-
-	bullet("delete_last_batch", "DELETE", "", lastBatch())
 
 	newBatchData := sdk.Batch{
 		ID:             86102,
@@ -85,53 +85,60 @@ func ExampleConfig() Raid {
 	defineBullets()
 
 	makeBomb("batch",
-		bullets["create_batch"],
-		bullets["get_a_batch"],
-		bullets["update_a_batch"],
+		weapons["create_batch"],
+		weapons["get_a_batch"],
+		weapons["update_a_batch"],
 	)
 	makeBomb("create_batch",
-		bullets["create_batch"],
+		weapons["create_batch"],
 	)
-	makeBomb("delete_last_batch",
-		bullets["delete_last_batch"],
-	)
+	// makeBomb("delete_last_batch",
+	// 	// weapons["delete_last_batch"],
+	// 	getMissile(),
+	// )
+	// bombs["delete_newest_batch"] = getBomb()
 	makeBomb("get_batch",
-		bullets["get_a_batch"],
+		weapons["get_a_batch"],
 	)
 	makeBomb("update_batch",
-		bullets["update_a_batch"],
+		weapons["update_a_batch"],
 	)
 	makeBomb("create_and_confirm_batch",
-		bullets["get_batches"],
-		bullets["create_batch"],
-		bullets["get_batches"],
+		weapons["get_batches"],
+		weapons["create_batch"],
+		weapons["get_batches"],
 	)
 	makeBomb("create_and_delete_batch",
-		bullets["create_batch"],
-		bullets["delete_last_batch"],
+		weapons["create_batch"],
+		weapons["delete_last_batch"],
 	)
 	makeBomb("get_invalid_batches",
-		bullets["get_invalid_batch"],
+		weapons["get_invalid_batch"],
 	)
 	makeBomb("create_and_confirm_photo",
-		bullets["create_photo"],
-		bullets["get_photos"],
+		weapons["create_photo"],
+		weapons["get_photos"],
 	)
 	makeBomb("upload_a_release",
-		bullets["create_release"],
+		weapons["create_release"],
 	)
 
-	var smallRaid []Bomb
-	for i := 1; i <= 2; i++ {
-		smallRaid = append(smallRaid, bombs["get_batch"])
+	var parallelRaid []Bomb
+	for i := 1; i <= 4; i++ {
+		// parallelRaid = append(parallelRaid, bombs["get_batch"])
+		// parallelRaid = append(parallelRaid, bombs["create_and_delete_batch"])
+		parallelRaid = append(parallelRaid, getBomb())
 	}
 
 	return NewRaid(
-		smallRaid...,
-	// bombs["batch"],
-	// bombs["batch"],
-	// bombs["get_batch"],
-	// bombs["create_batch"],
+		// parallelRaid...,
+		// bombs["batch"],
+		// bombs["batch"],
+		// bombs["get_batch"],
+		// bombs["create_batch"],
+		// bombs["create_batch"],
+		// bombs["create_batch"],
+		getBomb(),
 	// bombs["delete_last_batch"],
 	// bombs["create_and_confirm_batch"],
 	// bombs["create_and_delete_batch"],
