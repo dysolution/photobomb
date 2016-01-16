@@ -10,8 +10,8 @@ import (
 
 var inception time.Time
 var raidCount, requestCount int
-var interval float32
-var intervalDelta = make(chan float32, 1)
+var interval int
+var intervalDelta = make(chan float64, 1)
 var toggle = make(chan bool, 1)
 var enabled bool
 
@@ -22,6 +22,22 @@ func init() {
 	enabled = true
 	interval = 5
 	log.Formatter = &prefixed.TextFormatter{TimestampFormat: time.RFC3339}
+}
+
+// round returns the nearest integer. This implementation doesn't work for
+// negative numbers, but that doesn't matter in this context.
+func round(a float64) int {
+	val := int(a + 0.5)
+	if val < 1 {
+		val = 1
+	}
+	return val
+}
+
+func setInterval(d float64) {
+	log.Debugf("changing interval by %v seconds", d)
+	interval = round(float64(interval) + d)
+	log.Debugf("new interval: %v", interval)
 }
 
 func httpd() {
@@ -47,8 +63,7 @@ func httpd() {
 			select {
 			case enabled = <-toggle:
 			case d := <-intervalDelta:
-				log.Infof("changing interval by %v seconds", d)
-				interval += d
+				setInterval(d)
 			default:
 			}
 			if enabled {

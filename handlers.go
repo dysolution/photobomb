@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"math"
 	"net/http"
 	"reflect"
 	"runtime"
@@ -69,7 +70,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 		AppName      string
 		Config       string
 		Enabled      bool
-		Interval     float32
+		Interval     int
 		Request      *http.Request
 		RaidCount    int
 		RequestCount int
@@ -92,14 +93,14 @@ func status(w http.ResponseWriter, r *http.Request) {
 }
 
 func backoff(w http.ResponseWriter, r *http.Request) {
-	newInterval := interval * 1.618
-	intervalDelta <- newInterval - interval
+	newInterval := float64(interval) * math.Phi
+	intervalDelta <- float64(newInterval - float64(interval))
 	w.Write([]byte(fmt.Sprintf("backing off to %v", newInterval)))
 }
 
 func speedup(w http.ResponseWriter, r *http.Request) {
-	newInterval := interval / 1.618
-	intervalDelta <- newInterval - interval
+	newInterval := float64(interval) / math.Phi
+	intervalDelta <- float64(newInterval - float64(interval))
 	w.Write([]byte(fmt.Sprintf("speeding up to %v", newInterval)))
 }
 
