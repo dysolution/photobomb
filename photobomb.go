@@ -6,8 +6,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"time"
 
+	"github.com/Sirupsen/logrus"
 	sdk "github.com/dysolution/espsdk"
+	"github.com/x-cray/logrus-prefixed-formatter"
 )
 
 const NAME = "photobomb"
@@ -18,9 +21,37 @@ var appID = fmt.Sprintf("%s %s", NAME, VERSION)
 var client sdk.Client
 var token sdk.Token
 var config Raid
+var enabled bool
+var inception time.Time
+var interval int
+var intervalDelta = make(chan float64, 1)
+var log *logrus.Logger
+var raidCount, requestCount int
+var toggle = make(chan bool, 1)
+var token sdk.Token
 
-type Serializable interface {
-	Marshal() ([]byte, error)
+func init() {
+	inception = time.Now()
+	enabled = false
+	interval = 5
+	log = sdk.Log
+	log.Formatter = &prefixed.TextFormatter{TimestampFormat: time.RFC3339}
+}
+
+// round returns the nearest integer. This implementation doesn't work for
+// negative numbers, but that doesn't matter in this context.
+func round(a float64) int {
+	val := int(a + 0.5)
+	if val < 1 {
+		val = 1
+	}
+	return val
+}
+
+func setInterval(d float64) {
+	log.Debugf("changing interval by %v seconds", d)
+	interval = round(float64(interval) + d)
+	log.Debugf("new interval: %v", interval)
 }
 
 func check(e error) {

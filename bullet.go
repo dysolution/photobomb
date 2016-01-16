@@ -29,8 +29,8 @@ func (b *Bullet) handler(fn func(sdk.Findable) (sdk.Result, error)) (sdk.Result,
 		log.Errorf("%s.Deploy %s: %v", b.Name, b.Method, err)
 		return sdk.Result{}, err
 	}
-	log.WithFields(req.Stats()).Debugf("%s.Deploy", b.Name)
-	return req, nil
+	result.Log().Debugf("%s.Deploy", b.Name)
+	return result, nil
 }
 
 // Deploy sets the Bullet in motion.

@@ -16,6 +16,7 @@ import (
 func mw(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
+		desc := "httpd"
 		requestCount += 1
 		name := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
 		log.WithFields(logrus.Fields{
@@ -24,7 +25,7 @@ func mw(fn http.HandlerFunc) http.HandlerFunc {
 			"name":       name,
 			"path":       r.URL.Path,
 			"request_id": requestCount,
-		}).Debug("httpd")
+		}).Debug(desc)
 
 		fn(w, r)
 
@@ -35,7 +36,7 @@ func mw(fn http.HandlerFunc) http.HandlerFunc {
 			"path":          r.URL.Path,
 			"request_id":    requestCount,
 			"response_time": time.Since(start),
-		}).Info("httpd")
+		}).Info(desc)
 	}
 }
 func status(w http.ResponseWriter, r *http.Request) {

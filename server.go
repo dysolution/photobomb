@@ -1,44 +1,9 @@
 package main
 
 import (
-	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"net/http"
 	"time"
-
-	"github.com/Sirupsen/logrus"
 )
-
-var inception time.Time
-var raidCount, requestCount int
-var interval int
-var intervalDelta = make(chan float64, 1)
-var toggle = make(chan bool, 1)
-var enabled bool
-
-var log = logrus.New()
-
-func init() {
-	inception = time.Now()
-	enabled = false
-	interval = 5
-	log.Formatter = &prefixed.TextFormatter{TimestampFormat: time.RFC3339}
-}
-
-// round returns the nearest integer. This implementation doesn't work for
-// negative numbers, but that doesn't matter in this context.
-func round(a float64) int {
-	val := int(a + 0.5)
-	if val < 1 {
-		val = 1
-	}
-	return val
-}
-
-func setInterval(d float64) {
-	log.Debugf("changing interval by %v seconds", d)
-	interval = round(float64(interval) + d)
-	log.Debugf("new interval: %v", interval)
-}
 
 func httpd() {
 	http.HandleFunc("/", mw(status))
@@ -67,10 +32,10 @@ func httpd() {
 			default:
 			}
 			if enabled {
-				log.Infof("conducting raid")
+				log.Debugf("conducting raid")
 				config.Conduct()
 				raidCount += 1
-				log.Infof("sleeping for %v seconds", interval)
+				log.Debugf("sleeping for %v seconds", interval)
 				time.Sleep(time.Duration(interval) * time.Second)
 			}
 		}
