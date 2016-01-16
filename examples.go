@@ -25,7 +25,7 @@ func makeBomb(name string, weapons ...Deployable) {
 	}
 }
 
-func getBomb() Bomb {
+func deleteLastBatch() Bomb {
 	return Bomb{
 		Name:    "delete_newest_batch",
 		Weapons: []Deployable{Missile{client, "delete_last_batch", client.DeleteLastBatch}}}
@@ -127,17 +127,17 @@ func ExampleConfig() Raid {
 	for i := 1; i <= 4; i++ {
 		// parallelRaid = append(parallelRaid, bombs["get_batch"])
 		// parallelRaid = append(parallelRaid, bombs["create_and_delete_batch"])
-		parallelRaid = append(parallelRaid, getBomb())
+		parallelRaid = append(parallelRaid, deleteLastBatch())
 	}
 
 	return Raid{
 		Bombs: []Bomb{
-			getBomb(),
+			deleteLastBatch(),
 			// parallelRaid...,
 			// bombs["batch"],
 			// bombs["batch"],
 			// bombs["get_batch"],
-			// bombs["create_batch"],
+			bombs["create_batch"],
 			// bombs["create_batch"],
 			// bombs["create_batch"],
 			// bombs["delete_last_batch"],
