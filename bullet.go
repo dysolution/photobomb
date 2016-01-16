@@ -23,18 +23,18 @@ type Bullet struct {
 	Payload sdk.RESTObject `json:"payload,omitempty"`
 }
 
-func (b *Bullet) handler(fn func(sdk.RESTObject) (*sdk.Result, error)) (*sdk.Result, error) {
-	req, err := fn(b.Payload)
+func (b *Bullet) handler(fn func(sdk.Findable) (sdk.Result, error)) (sdk.Result, error) {
+	result, err := fn(b.Payload)
 	if err != nil {
 		log.Errorf("%s.Deploy %s: %v", b.Name, b.Method, err)
-		return &sdk.Result{}, err
+		return sdk.Result{}, err
 	}
 	log.WithFields(req.Stats()).Debugf("%s.Deploy", b.Name)
 	return req, nil
 }
 
 // Deploy sets the Bullet in motion.
-func (b *Bullet) Deploy() (*sdk.Result, error) {
+func (b Bullet) Deploy() (sdk.Result, error) {
 	switch b.Method {
 	case "GET", "get":
 		return b.handler(b.client.VerboseGet)
@@ -43,11 +43,10 @@ func (b *Bullet) Deploy() (*sdk.Result, error) {
 	case "PUT", "put":
 		return b.handler(b.client.VerboseUpdate)
 	case "DELETE", "delete":
-		b.client.DeleteFromObject(b.Payload)
-		return &sdk.Result{}, nil
+		return b.handler(b.client.VerboseDelete)
 	}
 	msg := fmt.Sprintf("%s.Deploy: undefined method: %s", b.Name, b.Method)
-	return &sdk.Result{}, errors.New(msg)
+	return sdk.Result{}, errors.New(msg)
 }
 
 func (b *Bullet) String() string {
