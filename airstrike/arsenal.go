@@ -1,20 +1,22 @@
-package main
+package airstrike
 
 import (
+	"time"
+
+	"github.com/Sirupsen/logrus"
 	sdk "github.com/dysolution/espsdk"
+	"github.com/x-cray/logrus-prefixed-formatter"
 )
+
+var log *logrus.Logger
+
+func init() {
+	log = sdk.Log
+	log.Formatter = &prefixed.TextFormatter{TimestampFormat: time.RFC3339}
+}
 
 type Armed interface {
 	Fire() (sdk.Result, error)
-}
-
-type SimpleArsenal struct {
-	Name    string         `json:"name"`
-	Weapons []SimpleWeapon `json:"weapons"`
-}
-
-type SimpleWeapon struct {
-	Name string `json:"name"`
 }
 
 // An Arsenal is a collection of deployable weapons. It represents a list of

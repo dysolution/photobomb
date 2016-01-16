@@ -3,52 +3,23 @@ package main
 import (
 	"encoding/json"
 	"sync"
-	"time"
 
-	"github.com/Sirupsen/logrus"
 	sdk "github.com/dysolution/espsdk"
+	"github.com/dysolution/photobomb/airstrike"
 )
 
 type SimpleRaid struct {
-	Arsenals []SimpleArsenal `json:"bombs"`
+	Arsenals []struct {
+		Name    string `json:"name"`
+		Weapons []struct {
+			Name string `json:"name"`
+		} `json:"weapons"`
+	} `json:"planes"`
 }
 
 // A Raid is a collection of bombs capable of reporting summary statistics.
 type Raid struct {
-	Arsenals []Arsenal `json:"bombs"`
-}
-
-type Squadron struct {
-	wg sync.WaitGroup
-}
-
-func NewSquadron() Squadron {
-	var wg sync.WaitGroup
-	return Squadron{wg}
-}
-
-func (s *Squadron) bombard(ch chan sdk.Result, pilotID int, arsenal Arsenal) {
-	s.wg.Add(1)
-	defer s.wg.Done()
-
-	results, err := Deploy(arsenal)
-	if err != nil {
-		log.Errorf("Raid.Conduct(): %v", err)
-		ch <- sdk.Result{}
-	}
-
-	for weaponID, result := range results {
-		log.WithFields(logrus.Fields{
-			"pilot_id":      pilotID,
-			"weapon_id":     weaponID,
-			"method":        result.Verb,
-			"path":          result.Path,
-			"response_time": result.Duration * time.Millisecond,
-			"status_code":   result.StatusCode,
-		}).Info()
-
-		ch <- result
-	}
+	Arsenals []airstrike.Arsenal `json:"planes"`
 }
 
 // Conduct concurrently drops all of the Bombs in a Raid's Payload and
@@ -77,8 +48,8 @@ func (r *Raid) String() string {
 }
 
 // NewRaid initializes and returns a Raid, . It should be used in lieu of Raid literals.
-func NewRaid(arsenals ...Arsenal) Raid {
-	var payload []Arsenal
+func NewRaid(arsenals ...airstrike.Arsenal) Raid {
+	var payload []airstrike.Arsenal
 	for _, arsenal := range arsenals {
 		payload = append(payload, arsenal)
 	}

@@ -4,22 +4,23 @@ import (
 	"time"
 
 	sdk "github.com/dysolution/espsdk"
+	"github.com/dysolution/photobomb/airstrike"
 	"github.com/icrowley/fake"
 )
 
-var weapons = make(map[string]Armed)
-var planes = make(map[string]Arsenal)
+var weapons = make(map[string]airstrike.Armed)
+var planes = make(map[string]airstrike.Arsenal)
 
 func makeBomb(name string, method string, url string, payload sdk.RESTObject) {
 	weapons[name] = Bomb{client, name, method, url, payload}
 }
 
-func armPlane(name string, weapons ...Armed) {
-	var ordnance []Armed
+func armPlane(name string, weapons ...airstrike.Armed) {
+	var ordnance []airstrike.Armed
 	for _, weapon := range weapons {
 		ordnance = append(ordnance, weapon)
 	}
-	planes[name] = Arsenal{
+	planes[name] = airstrike.Arsenal{
 		Name:    name,
 		Weapons: ordnance,
 	}
@@ -29,10 +30,10 @@ func foo() Missile {
 	return Missile{client, "delete_last_batch", client.DeleteLastBatch}
 }
 
-func deleteNewestBatch() Arsenal {
-	return Arsenal{
+func deleteNewestBatch() airstrike.Arsenal {
+	return airstrike.Arsenal{
 		Name:    "delete_newest_batch",
-		Weapons: []Armed{foo()}}
+		Weapons: []airstrike.Armed{foo()}}
 }
 
 func defineWeapons() {
@@ -127,7 +128,7 @@ func ExampleConfig() Raid {
 		weapons["create_release"],
 	)
 
-	var parallelRaid []Arsenal
+	var parallelRaid []airstrike.Arsenal
 	for i := 1; i <= 3; i++ {
 		// parallelRaid = append(parallelRaid, bombs["get_batch"])
 		parallelRaid = append(parallelRaid, planes["create_and_delete_batch"])
