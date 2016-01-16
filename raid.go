@@ -10,12 +10,12 @@ import (
 )
 
 type SimpleRaid struct {
-	Bombs []SimpleBomb `json:"bombs"`
+	Arsenals []SimpleArsenal `json:"bombs"`
 }
 
 // A Raid is a collection of bombs capable of reporting summary statistics.
 type Raid struct {
-	Bombs []Bomb `json:"bombs"`
+	Arsenals []Arsenal `json:"bombs"`
 }
 
 type Squadron struct {
@@ -27,11 +27,11 @@ func NewSquadron() Squadron {
 	return Squadron{wg}
 }
 
-func (s *Squadron) bombard(ch chan sdk.Result, bombardierID int, bomb Bomb) {
+func (s *Squadron) bombard(ch chan sdk.Result, pilotID int, arsenal Arsenal) {
 	s.wg.Add(1)
 	defer s.wg.Done()
 
-	results, err := Drop(bomb)
+	results, err := Deploy(arsenal)
 	if err != nil {
 		log.Errorf("Raid.Conduct(): %v", err)
 		ch <- sdk.Result{}
@@ -39,7 +39,7 @@ func (s *Squadron) bombard(ch chan sdk.Result, bombardierID int, bomb Bomb) {
 
 	for weaponID, result := range results {
 		log.WithFields(logrus.Fields{
-			"bombardier_id": bombardierID,
+			"pilot_id":      pilotID,
 			"weapon_id":     weaponID,
 			"method":        result.Verb,
 			"path":          result.Path,
@@ -58,9 +58,9 @@ func (r *Raid) Conduct() ([]sdk.Result, error) {
 	var reporterWg = sync.WaitGroup{}
 	var ch chan sdk.Result
 
-	for bombID, bomb := range r.Bombs {
+	for arsenalID, arsenal := range r.Arsenals {
 		squadron := NewSquadron()
-		go squadron.bombard(ch, bombID, bomb)
+		go squadron.bombard(ch, arsenalID, arsenal)
 		go func() {
 			reporterWg.Add(1)
 			result := <-ch
@@ -77,10 +77,10 @@ func (r *Raid) String() string {
 }
 
 // NewRaid initializes and returns a Raid, . It should be used in lieu of Raid literals.
-func NewRaid(bombs ...Bomb) Raid {
-	var payload []Bomb
-	for _, bomb := range bombs {
-		payload = append(payload, bomb)
+func NewRaid(arsenals ...Arsenal) Raid {
+	var payload []Arsenal
+	for _, arsenal := range arsenals {
+		payload = append(payload, arsenal)
 	}
-	return Raid{Bombs: payload}
+	return Raid{Arsenals: payload}
 }

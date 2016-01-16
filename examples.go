@@ -7,28 +7,32 @@ import (
 	"github.com/icrowley/fake"
 )
 
-var weapons = make(map[string]Deployable)
-var bombs = make(map[string]Bomb)
+var weapons = make(map[string]Armed)
+var arsenals = make(map[string]Arsenal)
 
 func bullet(name string, method string, url string, payload sdk.RESTObject) {
-	weapons[name] = Bullet{client, name, method, url, payload}
+	weapons[name] = Bomb{client, name, method, url, payload}
 }
 
-func makeBomb(name string, weapons ...Deployable) {
-	var ordnance []Deployable
+func makeArsenal(name string, weapons ...Armed) {
+	var ordnance []Armed
 	for _, weapon := range weapons {
 		ordnance = append(ordnance, weapon)
 	}
-	bombs[name] = Bomb{
+	arsenals[name] = Arsenal{
 		Name:    name,
 		Weapons: ordnance,
 	}
 }
 
-func deleteLastBatch() Bomb {
-	return Bomb{
+func foo() Missile {
+	return Missile{client, "delete_last_batch", client.DeleteLastBatch}
+}
+
+func deleteNewestBatch() Arsenal {
+	return Arsenal{
 		Name:    "delete_newest_batch",
-		Weapons: []Deployable{Missile{client, "delete_last_batch", client.DeleteLastBatch}}}
+		Weapons: []Armed{foo()}}
 }
 
 func defineBullets() {
@@ -84,54 +88,55 @@ func defineBullets() {
 func ExampleConfig() Raid {
 	defineBullets()
 
-	makeBomb("batch",
+	makeArsenal("batch",
 		weapons["create_batch"],
 		weapons["get_a_batch"],
 		weapons["update_a_batch"],
 	)
-	makeBomb("create_batch",
+	makeArsenal("create_batch",
 		weapons["create_batch"],
 	)
-	// makeBomb("delete_last_batch",
+	// makeArsenal("delete_last_batch",
 	// 	// weapons["delete_last_batch"],
 	// 	getMissile(),
 	// )
 	// bombs["delete_newest_batch"] = getBomb()
-	makeBomb("get_batch",
+	makeArsenal("get_batch",
 		weapons["get_a_batch"],
 	)
-	makeBomb("update_batch",
+	makeArsenal("update_batch",
 		weapons["update_a_batch"],
 	)
-	makeBomb("create_and_confirm_batch",
+	makeArsenal("create_and_confirm_batch",
 		weapons["get_batches"],
 		weapons["create_batch"],
 		weapons["get_batches"],
 	)
-	makeBomb("create_and_delete_batch",
+	makeArsenal("create_and_delete_batch",
 		weapons["create_batch"],
-		weapons["delete_last_batch"],
+		foo(),
 	)
-	makeBomb("get_invalid_batches",
+	makeArsenal("get_invalid_batches",
 		weapons["get_invalid_batch"],
 	)
-	makeBomb("create_and_confirm_photo",
+	makeArsenal("create_and_confirm_photo",
 		weapons["create_photo"],
 		weapons["get_photos"],
 	)
-	makeBomb("upload_a_release",
+	makeArsenal("upload_a_release",
 		weapons["create_release"],
 	)
 
-	var parallelRaid []Bomb
-	for i := 1; i <= 20; i++ {
-		parallelRaid = append(parallelRaid, bombs["get_batch"])
-		// parallelRaid = append(parallelRaid, bombs["create_and_delete_batch"])
+	var parallelRaid []Arsenal
+	for i := 1; i <= 3; i++ {
+		// parallelRaid = append(parallelRaid, bombs["get_batch"])
+		parallelRaid = append(parallelRaid, arsenals["create_and_delete_batch"])
 	}
 
 	return NewRaid(
-		// deleteLastBatch(),
-		parallelRaid...,
+		arsenals["create_and_delete_batch"],
+		deleteNewestBatch(),
+		// parallelRaid...,
 	// bombs["batch"],
 	// bombs["batch"],
 	// bombs["get_batch"],
@@ -140,7 +145,6 @@ func ExampleConfig() Raid {
 	// bombs["create_batch"],
 	// bombs["delete_last_batch"],
 	// bombs["create_and_confirm_batch"],
-	// bombs["create_and_delete_batch"],
 	// bombs["get_invalid_batches"],
 	// bombs["create_and_confirm_photo"],
 	// bombs["upload_a_release"],

@@ -11,8 +11,8 @@ type Missile struct {
 	Operation func() (sdk.Result, error) `json:"-"`
 }
 
-// Deploy fires the Missile.
-func (m Missile) Deploy() (sdk.Result, error) {
+// Fire deploys the Missile.
+func (m Missile) Fire() (sdk.Result, error) {
 	result, err := m.Operation()
 	if err != nil {
 		result.Log().Errorf("%s.Deploy %v: %v", m.Name, m.Operation, err)
@@ -20,4 +20,8 @@ func (m Missile) Deploy() (sdk.Result, error) {
 	}
 	result.Log().Debugf("%s.Deploy", m.Name)
 	return result, nil
+}
+
+func (m Missile) String() string {
+	return "Missile: " + m.Name
 }
