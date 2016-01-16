@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 	sdk "github.com/dysolution/espsdk"
 )
 

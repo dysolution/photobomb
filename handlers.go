@@ -9,7 +9,7 @@ import (
 	"runtime"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 )
 
 func mw(fn http.HandlerFunc) http.HandlerFunc {
@@ -17,7 +17,7 @@ func mw(fn http.HandlerFunc) http.HandlerFunc {
 		start := time.Now()
 		requestCount += 1
 		name := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
-		log.WithFields(log.Fields{
+		log.WithFields(logrus.Fields{
 			"host":       r.RemoteAddr,
 			"method":     r.Method,
 			"name":       name,
@@ -27,7 +27,7 @@ func mw(fn http.HandlerFunc) http.HandlerFunc {
 
 		fn(w, r)
 
-		log.WithFields(log.Fields{
+		log.WithFields(logrus.Fields{
 			"host":          r.RemoteAddr,
 			"method":        r.Method,
 			"name":          name,

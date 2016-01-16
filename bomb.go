@@ -1,7 +1,6 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
 	sdk "github.com/dysolution/espsdk"
 )
 

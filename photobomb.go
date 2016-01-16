@@ -7,7 +7,6 @@ import (
 	"io/ioutil"
 	"os"
 
-	log "github.com/Sirupsen/logrus"
 	sdk "github.com/dysolution/espsdk"
 )
 

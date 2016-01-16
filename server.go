@@ -1,10 +1,11 @@
 package main
 
 import (
+	prefixed "github.com/x-cray/logrus-prefixed-formatter"
 	"net/http"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 )
 
 var inception time.Time
@@ -14,10 +15,13 @@ var intervalDelta = make(chan float32, 1)
 var toggle = make(chan bool, 1)
 var enabled bool
 
+var log = logrus.New()
+
 func init() {
 	inception = time.Now()
 	enabled = true
 	interval = 5
+	log.Formatter = &prefixed.TextFormatter{TimestampFormat: time.RFC3339}
 }
 
 func httpd() {

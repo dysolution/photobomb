@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
 	sdk "github.com/dysolution/espsdk"
 )
@@ -78,15 +78,15 @@ func main() {
 		)
 
 		if c.Bool("debug") == true {
-			log.SetLevel(log.DebugLevel)
+			log.Level = logrus.DebugLevel
 		} else {
-			log.SetLevel(log.InfoLevel)
+			log.Level = logrus.InfoLevel
 		}
 
 		token = sdk.Token(c.String("token"))
 
 		if strings.ToLower(c.String("format")) == "json" {
-			log.SetFormatter(&log.JSONFormatter{})
+			log.Formatter = &logrus.JSONFormatter{}
 		}
 
 		config = loadConfig(c.String("config"))

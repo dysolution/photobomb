@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 
-	log "github.com/Sirupsen/logrus"
 	sdk "github.com/dysolution/espsdk"
 )
 
