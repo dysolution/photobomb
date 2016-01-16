@@ -124,28 +124,25 @@ func ExampleConfig() Raid {
 	)
 
 	var parallelRaid []Bomb
-	for i := 1; i <= 4; i++ {
-		// parallelRaid = append(parallelRaid, bombs["get_batch"])
+	for i := 1; i <= 20; i++ {
+		parallelRaid = append(parallelRaid, bombs["get_batch"])
 		// parallelRaid = append(parallelRaid, bombs["create_and_delete_batch"])
-		parallelRaid = append(parallelRaid, deleteLastBatch())
 	}
 
-	return Raid{
-		Bombs: []Bomb{
-			deleteLastBatch(),
-			// parallelRaid...,
-			// bombs["batch"],
-			// bombs["batch"],
-			// bombs["get_batch"],
-			bombs["create_batch"],
-			// bombs["create_batch"],
-			// bombs["create_batch"],
-			// bombs["delete_last_batch"],
-			// bombs["create_and_confirm_batch"],
-			// bombs["create_and_delete_batch"],
-			// bombs["get_invalid_batches"],
-			// bombs["create_and_confirm_photo"],
-			// bombs["upload_a_release"],
-		},
-	}
+	return NewRaid(
+		// deleteLastBatch(),
+		parallelRaid...,
+	// bombs["batch"],
+	// bombs["batch"],
+	// bombs["get_batch"],
+	// bombs["create_batch"],
+	// bombs["create_batch"],
+	// bombs["create_batch"],
+	// bombs["delete_last_batch"],
+	// bombs["create_and_confirm_batch"],
+	// bombs["create_and_delete_batch"],
+	// bombs["get_invalid_batches"],
+	// bombs["create_and_confirm_photo"],
+	// bombs["upload_a_release"],
+	)
 }
