@@ -31,13 +31,13 @@ func (b *Bomb) String() string {
 func (b Bomb) Fire() (sdk.Result, error) {
 	switch b.Method {
 	case "GET", "get":
-		return b.handler(b.Client.VerboseGet)
+		return b.handler(b.Client.Get)
 	case "POST", "post":
 		return b.handler(b.Client.Create)
 	case "PUT", "put":
-		return b.handler(b.Client.VerboseUpdate)
+		return b.handler(b.Client.Update)
 	case "DELETE", "delete":
-		return b.handler(b.Client.VerboseDelete)
+		return b.handler(b.Client.Delete)
 	}
 	msg := fmt.Sprintf("%s.Deploy: undefined method: %s", b.Name, b.Method)
 	return sdk.Result{}, errors.New(msg)
