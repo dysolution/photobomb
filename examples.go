@@ -3,59 +3,70 @@ package main
 import (
 	"time"
 
-	sdk "github.com/dysolution/espsdk"
-	"github.com/dysolution/photobomb/airstrike"
+	"github.com/dysolution/airstrike"
+	"github.com/dysolution/espsdk"
+	"github.com/dysolution/sleepwalker"
 	"github.com/icrowley/fake"
 )
 
-var weapons = make(map[string]airstrike.Armed)
-var planes = make(map[string]airstrike.Arsenal)
+var weapons = make(map[string]airstrike.ArmedWeapon)
+var planes = make(map[string]airstrike.Plane)
 
-func makeBomb(name string, method string, url string, payload sdk.RESTObject) {
-	weapons[name] = airstrike.Bomb{client, name, method, url, payload}
+func makeBomb(name string, method string, url string, payload sleepwalker.RESTObject) {
+	weapons[name] = airstrike.Bomb{
+		Client:  client,
+		Name:    name,
+		Method:  method,
+		URL:     url,
+		Payload: payload,
+	}
 }
 
-func armPlane(name string, weapons ...airstrike.Armed) {
-	var ordnance []airstrike.Armed
+func armPlane(name string, weapons ...airstrike.ArmedWeapon) {
+	var ordnance []airstrike.ArmedWeapon
 	for _, weapon := range weapons {
 		ordnance = append(ordnance, weapon)
 	}
-	planes[name] = airstrike.Arsenal{
+	planes[name] = airstrike.Plane{
 		Name:    name,
-		Weapons: ordnance,
+		Arsenal: ordnance,
 	}
 }
 
-func foo() airstrike.Missile {
-	return airstrike.Missile{client, "delete_last_batch", client.DeleteLastBatch}
+func foo() airstrike.ArmedWeapon {
+	return airstrike.Missile{
+		Client:    client,
+		Name:      "delete_last_batch",
+		Operation: espsdk.DeleteLastBatch,
+	}
 }
 
-func deleteNewestBatch() airstrike.Arsenal {
-	return airstrike.Arsenal{
+func deleteNewestBatch() airstrike.Plane {
+	return airstrike.Plane{
 		Name:    "delete_newest_batch",
-		Weapons: []airstrike.Armed{foo()}}
+		Arsenal: []airstrike.ArmedWeapon{foo()}}
 }
 
 func defineWeapons() {
-	makeBomb("get_batches", "GET", sdk.Batches, nil)
-	makeBomb("get_a_batch", "GET", "", sdk.Batch{ID: 86102})
+	makeBomb("get_batches", "GET", espsdk.Batches, nil)
+	makeBomb("get_a_batch", "GET", "", espsdk.Batch{ID: 86102})
 
-	makeBomb("create_batch", "POST", sdk.Batches, sdk.Batch{
+	makeBomb("create_batch", "POST", espsdk.Batches, espsdk.Batch{
 		SubmissionName: appID + ": " + fake.FullName(),
 		SubmissionType: "getty_creative_video",
 	})
 
-	newBatchData := sdk.Batch{
+	newBatchData := espsdk.Batch{
 		ID:             86102,
 		SubmissionName: "updated headline",
 		Note:           "updated note",
 	}
 	makeBomb("update_a_batch", "PUT", "", newBatchData)
 
-	badBatch := sdk.Batch{ID: -1}
+	badBatch := espsdk.Batch{ID: -1}
 	makeBomb("get_invalid_batch", "GET", badBatch.Path(), badBatch)
 
-	edPhoto := sdk.Contribution{
+	edPhoto := espsdk.Contribution{
 		SubmissionBatchID:    86102,
 		CameraShotDate:       time.Now().Format("01/02/2006"),
 		ContentProviderName:  "provider",
@@ -70,10 +81,10 @@ func defineWeapons() {
 	}
 	makeBomb("create_photo", "POST", edPhoto.Path(), edPhoto)
 
-	edBatch := sdk.Batch{ID: 86103}
+	edBatch := espsdk.Batch{ID: 86103}
 	makeBomb("get_photos", "GET", edBatch.Path(), edBatch)
 
-	release := sdk.Release{
+	release := espsdk.Release{
 		SubmissionBatchID: 86103,
 		FileName:          "some_property.jpg",
 		ReleaseType:       "Property",
@@ -128,26 +139,26 @@ func ExampleConfig() airstrike.Raid {
 		weapons["create_release"],
 	)
 
-	var parallelRaid []airstrike.Arsenal
+	var parallelRaid []airstrike.Plane
 	for i := 1; i <= 3; i++ {
 		// parallelRaid = append(parallelRaid, bombs["get_batch"])
 		parallelRaid = append(parallelRaid, planes["create_and_delete_batch"])
 	}
 
 	return airstrike.NewRaid(
-		planes["create_and_delete_batch"],
-		deleteNewestBatch(),
+		// planes["create_and_delete_batch"],
+		// deleteNewestBatch(),
 		// parallelRaid...,
-	// bombs["batch"],
-	// bombs["batch"],
-	// bombs["get_batch"],
-	// bombs["create_batch"],
-	// bombs["create_batch"],
-	// bombs["create_batch"],
-	// bombs["delete_last_batch"],
-	// bombs["create_and_confirm_batch"],
-	// bombs["get_invalid_batches"],
-	// bombs["create_and_confirm_photo"],
-	// bombs["upload_a_release"],
+		// bombs["batch"],
+		// bombs["batch"],
+		// bombs["create_batch"],
+		// bombs["create_batch"],
+		// bombs["create_batch"],
+		// bombs["delete_last_batch"],
+		// bombs["create_and_confirm_batch"],
+		// bombs["get_invalid_batches"],
+		// bombs["create_and_confirm_photo"],
+		// bombs["upload_a_release"],
+		planes["get_batch"],
 	)
 }

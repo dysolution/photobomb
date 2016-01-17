@@ -9,7 +9,8 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
-	sdk "github.com/dysolution/espsdk"
+	"github.com/dysolution/espsdk"
+	"github.com/dysolution/sleepwalker"
 )
 
 func main() {
@@ -69,12 +70,13 @@ func main() {
 		},
 	}
 	app.Before = func(c *cli.Context) error {
-		client = sdk.GetClient(
+		client = sleepwalker.GetClient(
 			c.String("key"),
 			c.String("secret"),
 			c.String("username"),
 			c.String("password"),
-			c.String("s3-bucket"),
+			espsdk.OAuthEndpoint,
+			espsdk.ESPAPIRoot,
 		)
 
 		if c.Bool("debug") == true {
@@ -83,7 +85,7 @@ func main() {
 			log.Level = logrus.InfoLevel
 		}
 
-		token = sdk.Token(c.String("token"))
+		token = sleepwalker.Token(c.String("token"))
 
 		if strings.ToLower(c.String("format")) == "json" {
 			log.Formatter = &logrus.JSONFormatter{}

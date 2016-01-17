@@ -8,8 +8,9 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	sdk "github.com/dysolution/espsdk"
-	"github.com/dysolution/photobomb/airstrike"
+	"github.com/dysolution/airstrike"
+	"github.com/dysolution/espsdk"
+	"github.com/dysolution/sleepwalker"
 	"github.com/x-cray/logrus-prefixed-formatter"
 )
 
@@ -18,7 +19,7 @@ const VERSION = "0.0.1"
 
 var appID = fmt.Sprintf("%s %s", NAME, VERSION)
 
-var client *sdk.Client
+var client sleepwalker.RESTClient
 var config airstrike.Raid
 var enabled bool
 var inception time.Time
@@ -27,13 +28,13 @@ var intervalDelta = make(chan float64, 1)
 var log *logrus.Logger
 var raidCount, requestCount int
 var toggle = make(chan bool, 1)
-var token sdk.Token
+var token sleepwalker.Token
 
 func init() {
 	inception = time.Now()
 	enabled = false
 	interval = 5
-	log = sdk.Log
+	log = espsdk.Log
 	log.Formatter = &prefixed.TextFormatter{TimestampFormat: time.RFC3339}
 }
 

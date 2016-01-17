@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/dysolution/photobomb/airstrike"
+	"github.com/dysolution/airstrike"
 )
 
 func mw(fn http.HandlerFunc) http.HandlerFunc {
