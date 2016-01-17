@@ -33,7 +33,7 @@ func httpd() {
 			}
 			if enabled {
 				log.Debugf("conducting raid")
-				config.Conduct()
+				config.Conduct(log)
 				raidCount += 1
 				log.Debugf("sleeping for %v seconds", interval)
 				time.Sleep(time.Duration(interval) * time.Second)

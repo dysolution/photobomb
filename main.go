@@ -32,7 +32,7 @@ var token sleepwalker.Token
 
 func init() {
 	inception = time.Now()
-	enabled = false
+	enabled = true
 	interval = 5
 	log = espsdk.Log
 	log.Formatter = &prefixed.TextFormatter{TimestampFormat: time.RFC3339}

@@ -78,6 +78,7 @@ func main() {
 			espsdk.OAuthEndpoint,
 			espsdk.ESPAPIRoot,
 		)
+		log.Debugf("client, created from environment: %v", client)
 
 		if c.Bool("debug") == true {
 			log.Level = logrus.DebugLevel

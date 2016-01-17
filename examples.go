@@ -22,13 +22,14 @@ func makeBomb(name string, method string, url string, payload sleepwalker.RESTOb
 	}
 }
 
-func armPlane(name string, weapons ...airstrike.ArmedWeapon) {
+func armPlane(name string, client sleepwalker.RESTClient, weapons ...airstrike.ArmedWeapon) {
 	var ordnance []airstrike.ArmedWeapon
 	for _, weapon := range weapons {
 		ordnance = append(ordnance, weapon)
 	}
 	planes[name] = airstrike.Plane{
 		Name:    name,
+		Client:  client,
 		Arsenal: ordnance,
 	}
 }
@@ -48,7 +49,7 @@ func deleteNewestBatch() airstrike.Plane {
 }
 
 func defineWeapons() {
-	makeBomb("get_batches", "GET", espsdk.Batches, nil)
+	makeBomb("get_batches", "GET", espsdk.Batches, espsdk.Batch{})
 	makeBomb("get_a_batch", "GET", "", espsdk.Batch{ID: 86102})
 
 	makeBomb("create_batch", "POST", espsdk.Batches, espsdk.Batch{
@@ -101,11 +102,13 @@ func ExampleConfig() airstrike.Raid {
 	defineWeapons()
 
 	armPlane("batch",
+		client,
 		weapons["create_batch"],
 		weapons["get_a_batch"],
 		weapons["update_a_batch"],
 	)
 	armPlane("create_batch",
+		client,
 		weapons["create_batch"],
 	)
 	// makeArsenal("delete_last_batch",
@@ -114,28 +117,35 @@ func ExampleConfig() airstrike.Raid {
 	// )
 	// bombs["delete_newest_batch"] = getBomb()
 	armPlane("get_batch",
+		client,
 		weapons["get_a_batch"],
 	)
 	armPlane("update_batch",
+		client,
 		weapons["update_a_batch"],
 	)
 	armPlane("create_and_confirm_batch",
+		client,
 		weapons["get_batches"],
 		weapons["create_batch"],
 		weapons["get_batches"],
 	)
 	armPlane("create_and_delete_batch",
+		client,
 		weapons["create_batch"],
 		foo(),
 	)
 	armPlane("get_invalid_batches",
+		client,
 		weapons["get_invalid_batch"],
 	)
 	armPlane("create_and_confirm_photo",
+		client,
 		weapons["create_photo"],
 		weapons["get_photos"],
 	)
 	armPlane("upload_a_release",
+		client,
 		weapons["create_release"],
 	)
 
@@ -152,12 +162,12 @@ func ExampleConfig() airstrike.Raid {
 		// planes["batch"],
 		// planes["batch"],
 		// planes["create_batch"],
-		// planes["create_batch"],
 		// planes["delete_last_batch"],
 		// planes["get_invalid_batches"],
-		// planes["create_and_confirm_photo"],
+		planes["create_and_confirm_batch"],
+		planes["create_and_confirm_photo"],
 		planes["upload_a_release"],
-		// planes["create_and_confirm_batch"],
+		// planes["create_batch"],
 		// planes["get_batch"],
 	)
 }

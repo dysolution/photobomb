@@ -143,7 +143,7 @@ func showExampleConfig(w http.ResponseWriter, r *http.Request) {
 }
 
 func once(w http.ResponseWriter, r *http.Request) {
-	allResults, err := config.Conduct()
+	allResults, err := config.Conduct(log)
 	tableFlip(err)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	output, err := json.MarshalIndent(allResults, "", "  ")
