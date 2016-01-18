@@ -77,6 +77,7 @@ func main() {
 			c.String("password"),
 			espsdk.OAuthEndpoint,
 			espsdk.ESPAPIRoot,
+			log,
 		)
 		log.Debugf("client, created from environment: %v", client)
 
