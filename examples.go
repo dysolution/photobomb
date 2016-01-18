@@ -58,9 +58,10 @@ func defineWeapons() {
 		CameraShotDate:       time.Now().Format("01/02/2006"),
 		ContentProviderName:  "provider",
 		ContentProviderTitle: "Contributor",
-		CountryOfShoot:       fake.Country(),
-		CreditLine:           fake.FullName(),
-		FileName:             fake.Word() + ".jpg",
+		CountryOfShoot:       "United Kingdom",
+		CreditLine:           "John Sherer",
+		ExternalFileLocation: "https://c2.staticflickr.com/4/3747/11235643633_60b8701616_o.jpg",
+		FileName:             "11235643633_60b8701616_o.jpg",
 		Headline:             fake.Sentence(),
 		IPTCCategory:         "S",
 		SiteDestination:      []string{"Editorial", "WireImage.com"},
@@ -68,14 +69,14 @@ func defineWeapons() {
 	}
 	makeBomb("create_photo", "POST", edPhoto.Path(), edPhoto)
 
-	edBatch := espsdk.Batch{ID: 86103}
+	edBatch := espsdk.Batch{ID: 86572}
 	makeBomb("get_photos", "GET", edBatch.Path(), edBatch)
 
 	release := espsdk.Release{
-		SubmissionBatchID: 86103,
+		SubmissionBatchID: 86572,
 		FileName:          "some_property.jpg",
 		ReleaseType:       "Property",
-		FilePath:          "submission/releases/batch_86103/24780225369200015_some_property.jpg",
+		FilePath:          "submission/releases/batch_86572/24780225369200015_some_property.jpg",
 		MimeType:          "image/jpeg",
 	}
 	makeBomb("create_release", "POST", release.Path(), release)
