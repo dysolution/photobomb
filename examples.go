@@ -3,17 +3,21 @@ package main
 import (
 	"time"
 
-	"github.com/dysolution/airstrike"
+	as "github.com/dysolution/airstrike"
+	"github.com/dysolution/airstrike/arsenal"
 	"github.com/dysolution/espsdk"
 	"github.com/dysolution/sleepwalker"
 	"github.com/icrowley/fake"
 )
 
-var weapons = make(map[string]airstrike.ArmedWeapon)
-var planes = make(map[string]airstrike.Plane)
+var w = make(map[string]arsenal.ArmedWeapon)
+var a = make(map[string]arsenal.Arsenal)
+var p = make(map[string]as.Plane)
+
+var planes []as.Plane
 
 func makeBomb(name string, method string, url string, payload sleepwalker.RESTObject) {
-	weapons[name] = airstrike.Bomb{
+	w[name] = as.Bomb{
 		Client:  client,
 		Name:    name,
 		Method:  method,
@@ -22,30 +26,12 @@ func makeBomb(name string, method string, url string, payload sleepwalker.RESTOb
 	}
 }
 
-func armPlane(name string, client sleepwalker.RESTClient, weapons ...airstrike.ArmedWeapon) {
-	var ordnance []airstrike.ArmedWeapon
-	for _, weapon := range weapons {
-		ordnance = append(ordnance, weapon)
-	}
-	planes[name] = airstrike.Plane{
-		Name:    name,
-		Client:  client,
-		Arsenal: ordnance,
-	}
-}
-
-func foo() airstrike.ArmedWeapon {
-	return airstrike.Missile{
+func deleteNewestBatch() arsenal.ArmedWeapon {
+	return as.Missile{
 		Client:    client,
 		Name:      "delete_last_batch",
 		Operation: espsdk.DeleteLastBatch,
 	}
-}
-
-func deleteNewestBatch() airstrike.Plane {
-	return airstrike.Plane{
-		Name:    "delete_newest_batch",
-		Arsenal: []airstrike.ArmedWeapon{foo()}}
 }
 
 func defineWeapons() {
@@ -98,76 +84,49 @@ func defineWeapons() {
 // ExampleConfig returns an example of a complete configuration for the app.
 // When marshaled into JSON, this can be used as the contents of the config
 // file.
-func ExampleConfig() airstrike.Raid {
+func ExampleConfig() as.Raid {
 	defineWeapons()
 
-	armPlane("batch",
-		client,
-		weapons["create_batch"],
-		weapons["get_a_batch"],
-		weapons["update_a_batch"],
-	)
-	armPlane("create_batch",
-		client,
-		weapons["create_batch"],
-	)
-	// makeArsenal("delete_last_batch",
-	// 	// weapons["delete_last_batch"],
-	// 	getMissile(),
-	// )
-	// bombs["delete_newest_batch"] = getBomb()
-	armPlane("get_batch",
-		client,
-		weapons["get_a_batch"],
-	)
-	armPlane("update_batch",
-		client,
-		weapons["update_a_batch"],
-	)
-	armPlane("create_and_confirm_batch",
-		client,
-		weapons["get_batches"],
-		weapons["create_batch"],
-		weapons["get_batches"],
-	)
-	armPlane("create_and_delete_batch",
-		client,
-		weapons["create_batch"],
-		foo(),
-	)
-	armPlane("get_invalid_batches",
-		client,
-		weapons["get_invalid_batch"],
-	)
-	armPlane("create_and_confirm_photo",
-		client,
-		weapons["create_photo"],
-		weapons["get_photos"],
-	)
-	armPlane("upload_a_release",
-		client,
-		weapons["create_release"],
-	)
+	a["batch"] = arsenal.New(w["create_batch"], w["get_a_batch"], w["update_a_batch"])
+	a["create_and_confirm_batch"] = arsenal.New(w["get_batches"], w["create_batch"], w["get_batches"])
+	a["create_and_confirm_photo"] = arsenal.New(w["create_photo"], w["get_photos"])
+	a["create_and_delete_batch"] = arsenal.New(w["create_batch"], deleteNewestBatch())
+	a["create_batch"] = arsenal.New(w["create_batch"])
+	a["create_batch"] = arsenal.New(w["create_batch"])
+	a["create_relearsenale"] = arsenal.New(w["create_relearsenale"])
+	a["delete_newest_batch"] = arsenal.New(deleteNewestBatch())
+	a["get_batch"] = arsenal.New(w["get_a_batch"])
+	a["get_invalid_batches"] = arsenal.New(w["get_invalid_batch"])
+	a["update_batch"] = arsenal.New(w["update_a_batch"])
 
-	var parallelRaid []airstrike.Plane
-	for i := 1; i <= 3; i++ {
-		// parallelRaid = append(parallelRaid, bombs["get_batch"])
-		parallelRaid = append(parallelRaid, planes["create_and_delete_batch"])
+	for name, arsenal := range a {
+		plane := as.NewPlane(name, client)
+		err := plane.Arm(arsenal)
+		if err != nil {
+			log.Error(err)
+		}
+		p[name] = plane
 	}
 
-	return airstrike.NewRaid(
-		// planes["create_and_delete_batch"],
-		// deleteNewestBatch(),
-		// parallelRaid...,
+	log.Debug(p)
+	return getRaid(30, planes)
+}
+
+func getRaid(planeCount int, arsenals []as.Plane) as.Raid {
+	var mission []as.Plane
+	for i := 1; i <= planeCount; i++ {
+		// mission = append(mission, p["create_and_confirm_batch"])
+		mission = append(mission, p["create_and_confirm_photo"])
+		mission = append(mission, p["create_and_delete_batch"])
+		mission = append(mission, p["create_release"])
+		mission = append(mission, p["get_batch"])
 		// planes["batch"],
 		// planes["batch"],
 		// planes["create_batch"],
 		// planes["delete_last_batch"],
 		// planes["get_invalid_batches"],
-		planes["create_and_confirm_batch"],
-		planes["create_and_confirm_photo"],
-		planes["upload_a_release"],
 		// planes["create_batch"],
 		// planes["get_batch"],
-	)
+	}
+	return as.NewRaid(mission...)
 }
