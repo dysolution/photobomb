@@ -32,6 +32,7 @@ var log *logrus.Logger
 var raidCount, requestCount int
 var toggle = make(chan bool, 1)
 var token sleepwalker.Token
+var warningThreshold time.Duration
 
 func init() {
 	inception = time.Now()

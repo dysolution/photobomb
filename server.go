@@ -35,7 +35,7 @@ func httpd() {
 			}
 			if enabled {
 				log.Debugf("conducting raid")
-				config.Conduct(log, espsdk.APIInvariant)
+				config.Conduct(log, espsdk.APIInvariant, warningThreshold)
 				raidCount++
 				log.Debugf("sleeping for %v seconds", interval)
 				time.Sleep(time.Duration(interval) * time.Second)

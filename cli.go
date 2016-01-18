@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
@@ -61,6 +62,13 @@ func main() {
 			Value:  "json",
 			Usage:  "[json|ascii]",
 			EnvVar: "PHOTOBOMB_OUTPUT_FORMAT",
+		},
+		cli.DurationFlag{
+			Name:        "warning-threshold, w",
+			Value:       time.Duration(200 * time.Millisecond),
+			Usage:       "output WARN log messages for response times above this, e.g., 200ms",
+			EnvVar:      "PHOTOBOMB_WARNING_THRESHOLD",
+			Destination: &warningThreshold,
 		},
 		cli.StringFlag{
 			Name:   "config, c",
