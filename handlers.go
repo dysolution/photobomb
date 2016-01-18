@@ -18,7 +18,7 @@ func mw(fn http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		desc := "httpd"
-		requestCount += 1
+		requestCount++
 		name := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
 		log.WithFields(logrus.Fields{
 			"host":       r.RemoteAddr,

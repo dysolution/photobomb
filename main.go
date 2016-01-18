@@ -14,7 +14,10 @@ import (
 	"github.com/x-cray/logrus-prefixed-formatter"
 )
 
+// NAME appears in the CLI output.
 const NAME = "photobomb"
+
+// VERSION appears in the CLI output.
 const VERSION = "0.0.1"
 
 var appID = fmt.Sprintf("%s %s", NAME, VERSION)
