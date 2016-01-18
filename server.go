@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 	"time"
+
+	"github.com/dysolution/espsdk"
 )
 
 func httpd() {
@@ -33,8 +35,8 @@ func httpd() {
 			}
 			if enabled {
 				log.Debugf("conducting raid")
-				config.Conduct(log)
-				raidCount += 1
+				config.Conduct(log, espsdk.APIInvariant)
+				raidCount++
 				log.Debugf("sleeping for %v seconds", interval)
 				time.Sleep(time.Duration(interval) * time.Second)
 			}
