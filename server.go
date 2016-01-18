@@ -14,9 +14,7 @@ func httpd() {
 
 	http.HandleFunc("/attack", mw(attack))
 	http.HandleFunc("/cease_fire", mw(pause))
-	http.HandleFunc("/once", mw(once))
 	http.HandleFunc("/pause", mw(pause))
-	http.HandleFunc("/warning_shot", mw(once))
 
 	http.HandleFunc("/faster", mw(faster))
 	http.HandleFunc("/slower", mw(slower))
