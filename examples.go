@@ -141,9 +141,10 @@ func ExampleConfig() airstrike.Raid {
 	armory = ordnance.NewArmory(log)
 	defineWeapons()
 
-	squadron := airstrike.New(log)
+	squadron := airstrike.NewSquadron(log)
 
 	// // Krieger makes everything possible.
+	//
 	// Krieger := airstrike.NewPlane("Krieger", client)
 	// Krieger.Arm(armory.GetArsenal(
 	// 	"create_batch",
@@ -152,6 +153,7 @@ func ExampleConfig() airstrike.Raid {
 	// squadron.Add(Krieger)
 
 	// // Cheryl's working.
+	//
 	// plane = airstrike.NewPlane("Cheryl", client)
 	// plane.Arm(armory.GetArsenal(
 	// 	"create_photo",
@@ -160,6 +162,7 @@ func ExampleConfig() airstrike.Raid {
 	// squadron.Add(plane)
 
 	// // // Pam needs you to fill out this form.
+	//
 	// Pam := airstrike.NewPlane("Pam", client)
 	// Pam.Arm(armory.GetArsenal(
 	// 	"create_release",
@@ -168,6 +171,7 @@ func ExampleConfig() airstrike.Raid {
 	// squadron.Add(Pam)
 
 	// // Ray doesn't want to hear too much information.
+	//
 	// Ray := airstrike.NewPlane("Ray", client)
 	// Ray.Arm(armory.GetArsenal(
 	// 	"get_batch",
@@ -176,7 +180,8 @@ func ExampleConfig() airstrike.Raid {
 	// ))
 	// squadron.Add(Ray)
 
-	// // Archer wants things his way.
+	// Archer wants things his way.
+	//
 	// Archer := airstrike.NewPlane("Archer", client)
 	// Archer.Arm(armory.GetArsenal(
 	// 	"update_a_batch",
@@ -185,6 +190,7 @@ func ExampleConfig() airstrike.Raid {
 	// squadron.Add(Archer)
 
 	// // Cyril accounts for everything.
+	//
 	// Cyril := airstrike.NewPlane("Cyril", client)
 	// Cyril.Arm(armory.GetArsenal(
 	// 	"get_batches",
@@ -194,6 +200,7 @@ func ExampleConfig() airstrike.Raid {
 	// squadron.Add(Cyril)
 
 	// // Malory makes unreasonable demands.
+	//
 	// Malory := airstrike.NewPlane("Malory", client)
 	// Malory.Arm(armory.GetArsenal(
 	// 	"get_invalid_batch",
@@ -203,10 +210,11 @@ func ExampleConfig() airstrike.Raid {
 	// squadron.Add(Malory)
 
 	// You can also simulate heavy load by creating many anonymous Planes
-	// that each performs any workflow composed of a single operation or many.
+	// that each perform any workflow composed of a single operation or many.
 	//
-	squadron.AddClones(5, client, armory, "get_batch")
-	squadron.AddChaos(5, 2, client, armory)
+	squadron.AddClones(1, client, armory, "get_batches")
+	// squadron.AddClones(7, client, armory, "get_batch", "get_release")
+	// squadron.AddChaos(5, 2, client, armory)
 
 	return airstrike.NewRaid(squadron.Planes...)
 }
