@@ -12,8 +12,6 @@ import (
 	"github.com/icrowley/fake"
 )
 
-var deprecatedPlanes []airstrike.Plane
-
 var armory ordnance.Armory
 
 func makeMissile(name string, op func(sleepwalker.RESTClient) (sleepwalker.Result, error)) {
