@@ -1,10 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/dysolution/airstrike"
 	"github.com/dysolution/airstrike/ordnance"
 	"github.com/dysolution/espsdk"
@@ -208,30 +206,7 @@ func ExampleConfig() airstrike.Raid {
 	// that each performs any workflow composed of a single operation or many.
 	//
 	squadron.AddClones(5, client, armory, "get_batch")
-	// AddChaos(5, 2, &squadron)
+	squadron.AddChaos(5, 2, client, armory)
 
 	return airstrike.NewRaid(squadron.Planes...)
-}
-
-// AddChaos creates the specified number of Planes that each have their own
-// random selection of n weapons, quantified by their "deadliness."
-func AddChaos(clones int, deadliness int, squadron *airstrike.Squadron) {
-	desc := "AddChaos"
-	for i := 1; i <= clones; i++ {
-		name := fmt.Sprintf("chaos_%d_of_%d", i, clones)
-		plane := airstrike.NewPlane(name, client)
-
-		weaponNames := armory.GetRandomWeaponNames(deadliness)
-		var arsenal ordnance.Arsenal
-		for _, weaponName := range weaponNames {
-			log.WithFields(logrus.Fields{
-				"plane":  name,
-				"weapon": weaponName,
-				"msg":    "adding weapon",
-			}).Debug(desc)
-			arsenal = append(arsenal, armory.GetWeapon(weaponName))
-		}
-		plane.Arm(arsenal)
-		squadron.Add(plane)
-	}
 }
