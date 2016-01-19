@@ -64,6 +64,12 @@ func main() {
 			EnvVar: "PHOTOBOMB_OUTPUT_FORMAT",
 		},
 		cli.DurationFlag{
+			Name:   "attack-interval, i",
+			Value:  time.Duration(5 * time.Second),
+			Usage:  "wait this long between attacks, (minimum 1s)",
+			EnvVar: "PHOTOBOMB_ATTACK_INTERVAL",
+		},
+		cli.DurationFlag{
 			Name:        "warning-threshold, w",
 			Value:       time.Duration(200 * time.Millisecond),
 			Usage:       "output WARN log messages for response times above this, e.g., 200ms",
@@ -99,6 +105,11 @@ func main() {
 
 		if strings.ToLower(c.String("format")) == "json" {
 			log.Formatter = &logrus.JSONFormatter{}
+		}
+
+		cliInterval := int(c.Duration("attack-interval") / time.Duration(1*time.Second))
+		if cliInterval != 0 {
+			interval = cliInterval
 		}
 
 		config = loadConfig(c.String("config"))
