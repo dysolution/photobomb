@@ -82,6 +82,10 @@ func main() {
 			Usage:  "file containing configuration (try running \"example\")",
 			EnvVar: "PHOTOBOMB_CONFIG",
 		},
+		cli.BoolFlag{
+			Name:  "quiet, q",
+			Usage: "suppress log output and display only console gauge",
+		},
 	}
 	app.Before = func(c *cli.Context) error {
 		client = sleepwalker.GetClient(
@@ -95,8 +99,10 @@ func main() {
 		)
 		log.Debugf("client, created from environment: %v", client)
 
-		if c.Bool("debug") == true {
+		if c.Bool("debug") {
 			log.Level = logrus.DebugLevel
+		} else if c.Bool("quiet") {
+			log.Level = logrus.ErrorLevel
 		} else {
 			log.Level = logrus.InfoLevel
 		}

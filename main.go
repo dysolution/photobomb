@@ -9,7 +9,6 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/dysolution/airstrike"
-	"github.com/dysolution/espsdk"
 	"github.com/dysolution/sleepwalker"
 	"github.com/x-cray/logrus-prefixed-formatter"
 )
@@ -38,7 +37,8 @@ func init() {
 	inception = time.Now()
 	enabled = true
 	interval = 5
-	log = espsdk.Log
+	// log = espsdk.Log
+	log = logrus.New()
 	log.Formatter = &prefixed.TextFormatter{TimestampFormat: time.RFC3339}
 }
 
