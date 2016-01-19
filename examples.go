@@ -208,26 +208,11 @@ func ExampleConfig() airstrike.Raid {
 
 	// You can also simulate heavy load by creating many anonymous Planes
 	// that each performs any workflow composed of a single operation or many.
-	// AddClones(5, &squadron, "get_batch")
-	AddChaos(5, 2, &squadron)
+	//
+	squadron.AddClones(5, client, armory, "get_batch")
+	// AddChaos(5, 2, &squadron)
 
 	return airstrike.NewRaid(squadron.Planes...)
-}
-
-// AddClones creates the specified number of Planes, each armed with the
-// payload described, which can be one or more weapons.
-func AddClones(clones int, squadron *airstrike.Squadron, weapons ...string) {
-	for i := 1; i <= clones; i++ {
-		name := fmt.Sprintf("clone_%d_of_%d", i, clones)
-		for _, weapon := range weapons {
-			name = fmt.Sprintf("%s_%s", name, weapon)
-		}
-		plane := airstrike.NewPlane(name, client)
-		for _, weapon := range weapons {
-			plane.Arm(armory.GetArsenal(weapon))
-		}
-		squadron.Add(plane)
-	}
 }
 
 // AddChaos creates the specified number of Planes that each have their own
