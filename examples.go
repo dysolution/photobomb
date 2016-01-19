@@ -1,60 +1,73 @@
 package main
 
 import (
+	"fmt"
 	"time"
 
-	as "github.com/dysolution/airstrike"
-	"github.com/dysolution/airstrike/arsenal"
+	"github.com/Sirupsen/logrus"
+	"github.com/dysolution/airstrike"
+	"github.com/dysolution/airstrike/ordnance"
 	"github.com/dysolution/espsdk"
 	"github.com/dysolution/sleepwalker"
 	"github.com/icrowley/fake"
 )
 
-var w = make(map[string]arsenal.ArmedWeapon)
-var a = make(map[string]arsenal.Arsenal)
-var p = make(map[string]as.Plane)
+var deprecatedPlanes []airstrike.Plane
 
-var planes []as.Plane
+var armory ordnance.Armory
 
-func makeBomb(name string, method string, url string, payload sleepwalker.RESTObject) {
-	w[name] = as.Bomb{
-		Client:  client,
-		Name:    name,
-		Method:  method,
-		URL:     url,
-		Payload: payload,
-	}
+func makeMissile(name string, op func(sleepwalker.RESTClient) (sleepwalker.Result, error)) {
+	armory.NewMissile(client, name, op)
 }
 
-func deleteNewestBatch() arsenal.ArmedWeapon {
-	return as.Missile{
-		Client:    client,
-		Name:      "delete_last_batch",
-		Operation: espsdk.DeleteLastBatch,
-	}
+func makeBomb(name, method, url string, payload sleepwalker.RESTObject) {
+	armory.NewBomb(client, name, method, url, payload)
 }
 
-func defineWeapons() {
+// test the Index functionality
+func indexes(edImageBatch, crVideoBatch espsdk.Batch) {
 	makeBomb("get_batches", "GET", espsdk.Batches, espsdk.Batch{})
-	makeBomb("get_a_batch", "GET", "", espsdk.Batch{ID: 86102})
+	makeMissile(
+		"get_contributions",
+		func(c sleepwalker.RESTClient) (sleepwalker.Result, error) {
+			// Getting an empty Contribution with a SubmissionBatchID retrieves
+			// the index of all Contributions for that Batch.
+			return client.Get(espsdk.Contribution{
+				SubmissionBatchID: edImageBatch.ID,
+			})
+		},
+	)
+	makeMissile(
+		"get_releases",
+		func(c sleepwalker.RESTClient) (sleepwalker.Result, error) {
+			// Getting an empty Release with a SubmissionBatchID retrieves
+			// the index of all Releases for that Batch.
+			return client.Get(espsdk.Release{
+				SubmissionBatchID: crVideoBatch.ID,
+			})
+		},
+	)
+}
 
+// a few objects that don't exist, to test 404
+func duds(edImageBatch, crVideoBatch espsdk.Batch) {
+	badBatch := espsdk.Batch{ID: -1}
+	badContribution := espsdk.Contribution{ID: -1, SubmissionBatchID: edImageBatch.ID}
+	badRelease := espsdk.Release{ID: -1, SubmissionBatchID: crVideoBatch.ID}
+	makeBomb("get_invalid_batch", "GET", badBatch.Path(), badBatch)
+	makeBomb("get_invalid_contribution", "GET", badContribution.Path(), badContribution)
+	makeBomb("get_invalid_release", "GET", badRelease.Path(), badRelease)
+}
+
+// test Create / POST functionality
+func creates(edImageBatch, crVideoBatch espsdk.Batch) {
 	makeBomb("create_batch", "POST", espsdk.Batches, espsdk.Batch{
 		SubmissionName: appID + ": " + fake.FullName(),
 		SubmissionType: "getty_creative_video",
 	})
 
-	newBatchData := espsdk.Batch{
-		ID:             86102,
-		SubmissionName: "updated headline",
-		Note:           "updated note",
-	}
-	makeBomb("update_a_batch", "PUT", "", newBatchData)
-
-	badBatch := espsdk.Batch{ID: -1}
-	makeBomb("get_invalid_batch", "GET", badBatch.Path(), badBatch)
-
-	edPhoto := espsdk.Contribution{
-		SubmissionBatchID:    86102,
+	edImage := espsdk.Contribution{
+		SubmissionBatchID:    edImageBatch.ID,
 		CameraShotDate:       time.Now().Format("01/02/2006"),
 		ContentProviderName:  "provider",
 		ContentProviderTitle: "Contributor",
@@ -67,13 +80,10 @@ func defineWeapons() {
 		SiteDestination:      []string{"Editorial", "WireImage.com"},
 		Source:               "AFP",
 	}
-	makeBomb("create_photo", "POST", edPhoto.Path(), edPhoto)
-
-	edBatch := espsdk.Batch{ID: 86572}
-	makeBomb("get_photos", "GET", edBatch.Path(), edBatch)
+	makeBomb("create_photo", "POST", edImage.Path(), edImage)
 
 	release := espsdk.Release{
-		SubmissionBatchID: 86572,
+		SubmissionBatchID: crVideoBatch.ID,
 		FileName:          "some_property.jpg",
 		ReleaseType:       "Property",
 		FilePath:          "submission/releases/batch_86572/24780225369200015_some_property.jpg",
@@ -82,52 +92,163 @@ func defineWeapons() {
 	makeBomb("create_release", "POST", release.Path(), release)
 }
 
+// test Update / PUT functionality
+func updates(batch espsdk.Batch, photo espsdk.Contribution) {
+	newBatchData := espsdk.Batch{
+		ID:             batch.ID,
+		SubmissionName: "updated headline",
+		Note:           "updated note",
+	}
+	makeBomb("update_a_batch", "PUT", "", newBatchData)
+
+	contributionUpdate := espsdk.Contribution{
+		ID:                photo.ID,
+		SubmissionBatchID: batch.ID,
+		Headline:          fake.Sentence(),
+	}
+	makeBomb("update_a_contribution", "PUT", "", contributionUpdate)
+}
+
+// test Get / GET functionality
+func gets(b espsdk.Batch, c espsdk.Contribution, r espsdk.Release) {
+	makeBomb("get_batch", "GET", "", b)
+	makeBomb("get_contribution", "GET", "", c)
+	makeBomb("get_release", "GET", "", r)
+}
+
+func defineWeapons() {
+	// an Editorial Batch and a Creative Batch that are known to exist
+	edImageBatch := espsdk.Batch{ID: 86102}
+	crVideoBatch := espsdk.Batch{ID: 88086}
+	contribution := espsdk.Contribution{ID: 1124654, SubmissionBatchID: edImageBatch.ID}
+	release := espsdk.Release{ID: 39969, SubmissionBatchID: crVideoBatch.ID}
+
+	creates(edImageBatch, crVideoBatch)
+	updates(edImageBatch, contribution)
+	indexes(edImageBatch, crVideoBatch)
+	gets(edImageBatch, contribution, release)
+	duds(edImageBatch, crVideoBatch)
+
+	makeMissile("delete_last_batch", espsdk.DeleteLastBatch)
+
+}
+
 // ExampleConfig returns an example of a complete configuration for the app.
 // When marshaled into JSON, this can be used as the contents of the config
 // file.
-func ExampleConfig() as.Raid {
+//
+// Create Planes that are idempotent, i.e., if you create an object, make
+// sure that plane then deletes that object. Otherwise you could end up
+// exceeding maximum limits or deleting objects you didn't intend to.
+func ExampleConfig() airstrike.Raid {
+
+	armory = ordnance.NewArmory(log)
 	defineWeapons()
 
-	a["batch"] = arsenal.New(w["create_batch"], w["get_a_batch"], w["update_a_batch"])
-	a["create_and_confirm_batch"] = arsenal.New(w["get_batches"], w["create_batch"], w["get_batches"])
-	a["create_and_confirm_photo"] = arsenal.New(w["create_photo"], w["get_photos"])
-	a["create_and_delete_batch"] = arsenal.New(w["create_batch"], deleteNewestBatch())
-	a["create_batch"] = arsenal.New(w["create_batch"])
-	a["create_batch"] = arsenal.New(w["create_batch"])
-	a["create_relearsenale"] = arsenal.New(w["create_relearsenale"])
-	a["delete_newest_batch"] = arsenal.New(deleteNewestBatch())
-	a["get_batch"] = arsenal.New(w["get_a_batch"])
-	a["get_invalid_batches"] = arsenal.New(w["get_invalid_batch"])
-	a["update_batch"] = arsenal.New(w["update_a_batch"])
+	squadron := airstrike.New(log)
 
-	for name, arsenal := range a {
-		plane := as.NewPlane(name, client)
-		err := plane.Arm(arsenal)
-		if err != nil {
-			log.Error(err)
-		}
-		p[name] = plane
-	}
+	// // Krieger makes everything possible.
+	// Krieger := airstrike.NewPlane("Krieger", client)
+	// Krieger.Arm(armory.GetArsenal(
+	// 	"create_batch",
+	// 	"delete_last_batch",
+	// ))
+	// squadron.Add(Krieger)
 
-	log.Debug(p)
-	return getRaid(30, planes)
+	// // Cheryl's working.
+	// plane = airstrike.NewPlane("Cheryl", client)
+	// plane.Arm(armory.GetArsenal(
+	// 	"create_photo",
+	// 	"delete_last_photo",
+	// ))
+	// squadron.Add(plane)
+
+	// // // Pam needs you to fill out this form.
+	// Pam := airstrike.NewPlane("Pam", client)
+	// Pam.Arm(armory.GetArsenal(
+	// 	"create_release",
+	// 	"delete_last_release",
+	// ))
+	// squadron.Add(Pam)
+
+	// // Ray doesn't want to hear too much information.
+	// Ray := airstrike.NewPlane("Ray", client)
+	// Ray.Arm(armory.GetArsenal(
+	// 	"get_batch",
+	// 	"get_contribution",
+	// 	"get_release",
+	// ))
+	// squadron.Add(Ray)
+
+	// // Archer wants things his way.
+	// Archer := airstrike.NewPlane("Archer", client)
+	// Archer.Arm(armory.GetArsenal(
+	// 	"update_a_batch",
+	// 	"update_a_contribution",
+	// ))
+	// squadron.Add(Archer)
+
+	// // Cyril accounts for everything.
+	// Cyril := airstrike.NewPlane("Cyril", client)
+	// Cyril.Arm(armory.GetArsenal(
+	// 	"get_batches",
+	// 	"get_contributions",
+	// 	"get_releases",
+	// ))
+	// squadron.Add(Cyril)
+
+	// // Malory makes unreasonable demands.
+	// Malory := airstrike.NewPlane("Malory", client)
+	// Malory.Arm(armory.GetArsenal(
+	// 	"get_invalid_batch",
+	// 	"get_invalid_contribution",
+	// 	"get_invalid_release",
+	// ))
+	// squadron.Add(Malory)
+
+	// You can also simulate heavy load by creating many anonymous Planes
+	// that each performs any workflow composed of a single operation or many.
+	// AddClones(5, &squadron, "get_batch")
+	AddChaos(5, 2, &squadron)
+
+	return airstrike.NewRaid(squadron.Planes...)
 }
 
-func getRaid(planeCount int, arsenals []as.Plane) as.Raid {
-	var mission []as.Plane
-	for i := 1; i <= planeCount; i++ {
-		// mission = append(mission, p["create_and_confirm_batch"])
-		mission = append(mission, p["create_and_confirm_photo"])
-		mission = append(mission, p["create_and_delete_batch"])
-		mission = append(mission, p["create_release"])
-		mission = append(mission, p["get_batch"])
-		// planes["batch"],
-		// planes["batch"],
-		// planes["create_batch"],
-		// planes["delete_last_batch"],
-		// planes["get_invalid_batches"],
-		// planes["create_batch"],
-		// planes["get_batch"],
+// AddClones creates the specified number of Planes, each armed with the
+// payload described, which can be one or more weapons.
+func AddClones(clones int, squadron *airstrike.Squadron, weapons ...string) {
+	for i := 1; i <= clones; i++ {
+		name := fmt.Sprintf("clone_%d_of_%d", i, clones)
+		for _, weapon := range weapons {
+			name = fmt.Sprintf("%s_%s", name, weapon)
+		}
+		plane := airstrike.NewPlane(name, client)
+		for _, weapon := range weapons {
+			plane.Arm(armory.GetArsenal(weapon))
+		}
+		squadron.Add(plane)
 	}
-	return as.NewRaid(mission...)
+}
+
+// AddChaos creates the specified number of Planes that each have their own
+// random selection of n weapons, quantified by their "deadliness."
+func AddChaos(clones int, deadliness int, squadron *airstrike.Squadron) {
+	desc := "AddChaos"
+	for i := 1; i <= clones; i++ {
+		name := fmt.Sprintf("chaos_%d_of_%d", i, clones)
+		plane := airstrike.NewPlane(name, client)
+
+		weaponNames := armory.GetRandomWeaponNames(deadliness)
+		var arsenal ordnance.Arsenal
+		for _, weaponName := range weaponNames {
+			log.WithFields(logrus.Fields{
+				"plane":  name,
+				"weapon": weaponName,
+				"msg":    "adding weapon",
+			}).Debug(desc)
+			arsenal = append(arsenal, armory.GetWeapon(weaponName))
+		}
+		plane.Arm(arsenal)
+		squadron.Add(plane)
+	}
 }
