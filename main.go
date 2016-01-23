@@ -17,7 +17,7 @@ import (
 const NAME = "photobomb"
 
 // VERSION appears in the CLI output.
-const VERSION = "0.0.1"
+const VERSION = "0.1.0"
 
 var appID = fmt.Sprintf("%s %s", NAME, VERSION)
 
@@ -28,7 +28,10 @@ var inception time.Time
 var interval int
 var intervalDelta = make(chan float64, 1)
 var log *logrus.Logger
+var logCh = make(chan map[string]interface{})
+var logWarning = make(chan map[string]interface{})
 var raidCount, requestCount int
+var reporter airstrike.Reporter
 var toggle = make(chan bool, 1)
 var token sleepwalker.Token
 var warningThreshold time.Duration
@@ -37,7 +40,6 @@ func init() {
 	inception = time.Now()
 	enabled = true
 	interval = 5
-	// log = espsdk.Log
 	log = logrus.New()
 	log.Formatter = &prefixed.TextFormatter{TimestampFormat: time.RFC3339}
 }

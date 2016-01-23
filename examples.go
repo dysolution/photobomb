@@ -3,6 +3,7 @@ package main
 import (
 	"time"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/dysolution/airstrike"
 	"github.com/dysolution/airstrike/ordnance"
 	"github.com/dysolution/espsdk"
@@ -115,9 +116,9 @@ func gets(b espsdk.Batch, c espsdk.Contribution, r espsdk.Release) {
 func defineWeapons() {
 	// an Editorial Batch and a Creative Batch that are known to exist
 	edImageBatch := espsdk.Batch{ID: 86102}
-	crVideoBatch := espsdk.Batch{ID: 88086}
+	crVideoBatch := espsdk.Batch{ID: 89830}
 	contribution := espsdk.Contribution{ID: 1124654, SubmissionBatchID: edImageBatch.ID}
-	release := espsdk.Release{ID: 39969, SubmissionBatchID: crVideoBatch.ID}
+	release := espsdk.Release{ID: 40106, SubmissionBatchID: crVideoBatch.ID}
 
 	creates(edImageBatch, crVideoBatch)
 	updates(edImageBatch, contribution)
@@ -127,6 +128,77 @@ func defineWeapons() {
 
 	makeMissile("delete_last_batch", espsdk.DeleteLastBatch)
 
+}
+
+// A RESTClient can perform operations against a REST API.
+type RESTClient interface {
+	Get(sleepwalker.Findable) (sleepwalker.Result, error)
+	Create(sleepwalker.Findable) (sleepwalker.Result, error)
+	Update(sleepwalker.Findable) (sleepwalker.Result, error)
+	Delete(sleepwalker.Findable) (sleepwalker.Result, error)
+}
+
+// An Armory maintains a collection of weapons that can be retrieved by name.
+type Armory interface {
+	GetArsenal(...string)
+}
+
+func plane(name string, client RESTClient, armory ordnance.Armory, weaponNames ...string) airstrike.Plane {
+	plane := airstrike.NewPlane(name, client)
+	arsenal := armory.GetArsenal(weaponNames...)
+	plane.Arm(arsenal)
+	return plane
+}
+
+func defineWorkflows(squadron *airstrike.Squadron, client RESTClient, armory ordnance.Armory) {
+
+	// Krieger makes everything possible.
+	// squadron.Add(plane("Krieger", client, armory,
+	// 	"create_batch",
+	// 	"delete_last_batch",
+	// ))
+
+	// Cheryl's working.
+	// Cheryl := plane("Cheryl", client, armory,
+	// 	"create_photo",
+	// 	"delete_last_photo",
+	// )
+	// squadron.Add(Cheryl)
+
+	// Pam needs you to fill out this form.
+	// Pam := plane("Pam", client, armory,
+	// 	"create_release",
+	// 	"delete_last_release",
+	// )
+	// squadron.Add(Pam)
+
+	// Ray doesn't want to hear too much information.
+	// squadron.Add(plane("Ray", client, armory,
+	// 	"get_batch",
+	// 	"get_contribution",
+	// 	"get_release",
+	// ))
+
+	// Archer wants things his way.
+	// squadron.Add(plane("Archer", client, armory,
+	// 	"update_a_batch",
+	// 	"update_a_contribution",
+	// ))
+
+	// Cyril accounts for everything.
+	// squadron.Add(plane("Cyril", client, armory,
+	// 	"get_batches",
+	// 	"get_contributions",
+	// 	"get_releases",
+	// ))
+
+	// Malory makes unreasonable demands.
+	// Malory := plane("Malory", client, armory,
+	// 	"get_invalid_batch",
+	// 	"get_invalid_contribution",
+	// 	"get_invalid_release",
+	// )
+	// squadron.Add(Malory)
 }
 
 // ExampleConfig returns an example of a complete configuration for the app.
@@ -141,80 +213,27 @@ func ExampleConfig() airstrike.Raid {
 	armory = ordnance.NewArmory(log)
 	defineWeapons()
 
-	squadron := airstrike.NewSquadron(log)
+	go logger(logCh, log)
 
-	// // Krieger makes everything possible.
-	//
-	// Krieger := airstrike.NewPlane("Krieger", client)
-	// Krieger.Arm(armory.GetArsenal(
-	// 	"create_batch",
-	// 	"delete_last_batch",
-	// ))
-	// squadron.Add(Krieger)
+	squadron := airstrike.NewSquadron(logCh)
 
-	// // Cheryl's working.
-	//
-	// plane = airstrike.NewPlane("Cheryl", client)
-	// plane.Arm(armory.GetArsenal(
-	// 	"create_photo",
-	// 	"delete_last_photo",
-	// ))
-	// squadron.Add(plane)
-
-	// // // Pam needs you to fill out this form.
-	//
-	// Pam := airstrike.NewPlane("Pam", client)
-	// Pam.Arm(armory.GetArsenal(
-	// 	"create_release",
-	// 	"delete_last_release",
-	// ))
-	// squadron.Add(Pam)
-
-	// // Ray doesn't want to hear too much information.
-	//
-	// Ray := airstrike.NewPlane("Ray", client)
-	// Ray.Arm(armory.GetArsenal(
-	// 	"get_batch",
-	// 	"get_contribution",
-	// 	"get_release",
-	// ))
-	// squadron.Add(Ray)
-
-	// Archer wants things his way.
-	//
-	// Archer := airstrike.NewPlane("Archer", client)
-	// Archer.Arm(armory.GetArsenal(
-	// 	"update_a_batch",
-	// 	"update_a_contribution",
-	// ))
-	// squadron.Add(Archer)
-
-	// // Cyril accounts for everything.
-	//
-	// Cyril := airstrike.NewPlane("Cyril", client)
-	// Cyril.Arm(armory.GetArsenal(
-	// 	"get_batches",
-	// 	"get_contributions",
-	// 	"get_releases",
-	// ))
-	// squadron.Add(Cyril)
-
-	// // Malory makes unreasonable demands.
-	//
-	// Malory := airstrike.NewPlane("Malory", client)
-	// Malory.Arm(armory.GetArsenal(
-	// 	"get_invalid_batch",
-	// 	"get_invalid_contribution",
-	// 	"get_invalid_release",
-	// ))
-	// squadron.Add(Malory)
+	defineWorkflows(&squadron, client, armory)
 
 	// You can also simulate heavy load by creating many anonymous Planes
 	// that each perform any workflow composed of a single operation or many.
 	//
-	squadron.AddClones(1, client, armory, "get_batches")
-	// squadron.AddClones(7, client, armory, "get_batch", "get_release")
-	// squadron.AddChaos(5, 2, client, armory)
+	// squadron.AddClones(1, client, armory, "get_batch")
+	squadron.AddClones(20, client, armory, "get_batch")
+	// squadron.AddClones(1, client, armory,
+	// 	"get_contributions")
+	// squadron.AddChaos(10, 3, client, armory)
 
-	return airstrike.NewRaid(squadron.Planes...)
+	raid, err := airstrike.NewRaid(squadron.Planes...)
+	if err != nil {
+		logrus.WithFields(map[string]interface{}{
+			"error": err,
+		}).Error("ExampleConfig")
+		return airstrike.Raid{}
+	}
+	return raid
 }

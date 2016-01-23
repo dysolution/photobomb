@@ -10,7 +10,6 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/dysolution/airstrike"
 )
 
@@ -20,7 +19,7 @@ func mw(fn http.HandlerFunc) http.HandlerFunc {
 		desc := "httpd"
 		requestCount++
 		name := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
-		log.WithFields(logrus.Fields{
+		log.WithFields(map[string]interface{}{
 			"host":       r.RemoteAddr,
 			"method":     r.Method,
 			"name":       name,
@@ -30,7 +29,7 @@ func mw(fn http.HandlerFunc) http.HandlerFunc {
 
 		fn(w, r)
 
-		log.WithFields(logrus.Fields{
+		log.WithFields(map[string]interface{}{
 			"host":          r.RemoteAddr,
 			"method":        r.Method,
 			"name":          name,

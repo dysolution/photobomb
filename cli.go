@@ -10,6 +10,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/codegangsta/cli"
+	"github.com/dysolution/airstrike"
 	"github.com/dysolution/espsdk"
 	"github.com/dysolution/sleepwalker"
 )
@@ -66,13 +67,13 @@ func main() {
 		cli.DurationFlag{
 			Name:   "attack-interval, i",
 			Value:  time.Duration(5 * time.Second),
-			Usage:  "wait this long between attacks, (minimum 1s)",
+			Usage:  "wait this long between attacks (minimum 1s)",
 			EnvVar: "PHOTOBOMB_ATTACK_INTERVAL",
 		},
 		cli.DurationFlag{
 			Name:        "warning-threshold, w",
 			Value:       time.Duration(200 * time.Millisecond),
-			Usage:       "output WARN log messages for response times above this, e.g., 200ms",
+			Usage:       "log WARNINGs for long response times, e.g.: [0.2s|200ms|200000μs|200000000ns]",
 			EnvVar:      "PHOTOBOMB_WARNING_THRESHOLD",
 			Destination: &warningThreshold,
 		},
@@ -84,10 +85,20 @@ func main() {
 		},
 		cli.BoolFlag{
 			Name:  "quiet, q",
-			Usage: "suppress log output and display only console gauge",
+			Usage: "suppress log output",
 		},
 	}
 	app.Before = func(c *cli.Context) error {
+		desc := "cli.app.Before"
+		switch {
+		case c.Bool("debug"):
+			log.Level = logrus.DebugLevel
+		case c.Bool("quiet"):
+			log.Level = logrus.ErrorLevel
+		default:
+			log.Level = logrus.InfoLevel
+		}
+
 		client = sleepwalker.GetClient(
 			c.String("key"),
 			c.String("secret"),
@@ -97,14 +108,13 @@ func main() {
 			espsdk.ESPAPIRoot,
 			log,
 		)
-		log.Debugf("client, created from environment: %v", client)
 
-		if c.Bool("debug") {
-			log.Level = logrus.DebugLevel
-		} else if c.Bool("quiet") {
-			log.Level = logrus.ErrorLevel
-		} else {
-			log.Level = logrus.InfoLevel
+		// set up the reporter for logging and console output
+		reporter = airstrike.Reporter{
+			CountGoroutines:  false, // caution: uses package runtime
+			Logger:           log,
+			URLInvariant:     espsdk.APIInvariant,
+			WarningThreshold: warningThreshold,
 		}
 
 		token = sleepwalker.Token(c.String("token"))
@@ -119,9 +129,13 @@ func main() {
 		}
 
 		config = loadConfig(c.String("config"))
-		configJSON, err := json.Marshal(config)
-		tableFlip(err)
-		log.Debugf("configuration: %s", configJSON)
+		cfgJSON, err := json.Marshal(config)
+		if err != nil {
+			log.WithFields(logrus.Fields{
+				"error": "unable to marshal config",
+			}).Error(desc)
+		}
+		log.WithFields(logrus.Fields{"config": string(cfgJSON)}).Debug(desc)
 
 		return nil
 	}
@@ -144,8 +158,32 @@ func main() {
 				fmt.Printf("%s\n", out)
 			},
 		},
+		{
+			Name:  "gauge",
+			Usage: "display a horizontal bar gauge of response time",
+			Flags: []cli.Flag{
+				cli.IntFlag{
+					Name:  "max-width, m",
+					Usage: "console width",
+					Value: 80,
+				},
+				cli.StringFlag{
+					Name:  "glyph, g",
+					Usage: "character to use to build graph bars",
+					Value: "=",
+				},
+			},
+			Action: func(c *cli.Context) {
+				reporter.Gauge = true
+				reporter.MaxColumns = c.Int("max-width")
+				reporter.Glyph = c.String("glyph")[0]
+				log.Level = logrus.ErrorLevel
+				serve()
+			},
+		},
 	}
-	app.Action = func(c *cli.Context) { httpd() }
-
+	app.Action = func(c *cli.Context) {
+		serve()
+	}
 	app.Run(os.Args)
 }
