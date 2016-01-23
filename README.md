@@ -12,3 +12,4 @@ It uses the client and structs provided by the ESP SDK package.
 - auto-reload config.json
 - graceful shutdown by trapping signals from OS
 - track (and display in UI) per-bomb and per-bullet stats
+- send logs to Splunk/Logstash
