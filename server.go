@@ -6,9 +6,12 @@ import (
 	"runtime"
 	"time"
 
+	"gopkg.in/fsnotify.v1"
+
 	"github.com/Sirupsen/logrus"
 	"github.com/dysolution/airstrike"
 	"github.com/dysolution/espsdk"
+	"github.com/spf13/viper"
 )
 
 func serve() {
@@ -47,6 +50,12 @@ func beginMission(reporter airstrike.Reporter) {
 		"source":   desc,
 		"interval": interval,
 	}
+
+	viper.WatchConfig()
+	viper.OnConfigChange(func(e fsnotify.Event) {
+		fmt.Println("Config file changed:", e.Name)
+		fmt.Println(viper.GetString("foo")) // case-insensitive Setting & Getting
+	})
 
 	for {
 		select {

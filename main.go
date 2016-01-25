@@ -24,7 +24,6 @@ var appID = fmt.Sprintf("%s %s", NAME, VERSION)
 var client sleepwalker.RESTClient
 var config airstrike.Raid
 var enabled bool
-var inception time.Time
 var interval int
 var intervalDelta = make(chan float64, 1)
 var log *logrus.Logger
@@ -37,9 +36,7 @@ var token sleepwalker.Token
 var warningThreshold time.Duration
 
 func init() {
-	inception = time.Now()
 	enabled = true
-	interval = 5
 	log = logrus.New()
 	log.Formatter = &prefixed.TextFormatter{TimestampFormat: time.RFC3339}
 }

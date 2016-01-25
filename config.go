@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"strings"
+	"fmt"
 	"time"
 
 	"github.com/Sirupsen/logrus"
@@ -10,10 +10,48 @@ import (
 	"github.com/dysolution/airstrike"
 	"github.com/dysolution/espsdk"
 	"github.com/dysolution/sleepwalker"
+	"github.com/spf13/viper"
 )
+
+type Config struct {
+	Output struct {
+		Format string `json:"format"`
+		Quiet  bool   `json:"quiet"`
+		Level  string `json:"level"`
+	} `json:"output"`
+	Mission airstrike.Mission `json:"mission"`
+}
+
+func getConfig() Config {
+
+	viper.SetEnvPrefix(NAME)
+	viper.AutomaticEnv()
+
+	var cfg Config
+
+	viper.SetConfigType("json")
+	viper.SetConfigName("viperconfig")
+	viper.AddConfigPath("/etc/" + NAME + "/")
+	viper.AddConfigPath(".")
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(fmt.Errorf("Fatal error config file: %s \n", err))
+	}
+
+	viper.Set("mission.inception", time.Now())
+	viper.SetDefault("mission.interval", 1)
+	viper.SetDefault("output.format", "json")
+
+	viper.Unmarshal(&cfg)
+	out, _ := json.MarshalIndent(cfg, "", "    ")
+	fmt.Printf("%s", out)
+	return cfg
+}
 
 func appBefore(c *cli.Context) error {
 	desc := "cli.app.Before"
+
+	cfg := getConfig()
 
 	switch {
 	case c.Bool("debug"):
@@ -44,13 +82,13 @@ func appBefore(c *cli.Context) error {
 
 	token = sleepwalker.Token(c.String("token"))
 
-	if strings.ToLower(c.String("format")) == "json" {
+	if viper.GetString("format") == "json" {
 		log.Formatter = &logrus.JSONFormatter{}
 	}
 
 	cliInterval := int(c.Duration("attack-interval") / time.Duration(1*time.Second))
 	if cliInterval != 0 {
-		interval = cliInterval
+		cfg.Mission.Interval = cliInterval
 	}
 
 	config = loadConfig(c.String("config"))

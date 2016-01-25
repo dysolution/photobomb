@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/dysolution/airstrike"
+	"github.com/spf13/viper"
 )
 
 func mw(fn http.HandlerFunc) http.HandlerFunc {
@@ -66,6 +67,8 @@ func status(w http.ResponseWriter, r *http.Request) {
 
 	output, err := json.MarshalIndent(simpleConfig, "", "    ")
 	tableFlip(err)
+
+	inception := viper.GetTime("mission.inception")
 
 	data := struct {
 		AppName      string

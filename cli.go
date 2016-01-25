@@ -55,16 +55,16 @@ func main() {
 			EnvVar: "S3_BUCKET",
 		},
 		cli.StringFlag{
-			Name:   "format, f",
-			Value:  "json",
-			Usage:  "[json|ascii]",
-			EnvVar: "PHOTOBOMB_OUTPUT_FORMAT",
+			Name:  "format, f",
+			Value: "json",
+			Usage: "[json|ascii]",
+			// EnvVar: "PHOTOBOMB_OUTPUT_FORMAT",
 		},
 		cli.DurationFlag{
 			Name:   "attack-interval, i",
 			Value:  time.Duration(5 * time.Second),
 			Usage:  "wait this long between attacks (minimum 1s)",
-			EnvVar: "PHOTOBOMB_ATTACK_INTERVAL",
+			EnvVar: "PHOTOBOMB_INTERVAL",
 		},
 		cli.DurationFlag{
 			Name:        "warning-threshold, w",
@@ -73,15 +73,10 @@ func main() {
 			EnvVar:      "PHOTOBOMB_WARNING_THRESHOLD",
 			Destination: &warningThreshold,
 		},
-		cli.StringFlag{
-			Name:   "config, c",
-			Value:  "config.json",
-			Usage:  "file containing configuration (try running \"example\")",
-			EnvVar: "PHOTOBOMB_CONFIG",
-		},
 		cli.BoolFlag{
-			Name:  "quiet, q",
-			Usage: "suppress log output",
+			Name:   "quiet, q",
+			Usage:  "suppress log output",
+			EnvVar: "PHOTOBOMB_QUIET",
 		},
 	}
 	app.Before = appBefore

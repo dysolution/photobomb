@@ -222,8 +222,8 @@ func ExampleConfig() airstrike.Raid {
 	// You can also simulate heavy load by creating many anonymous Planes
 	// that each perform any workflow composed of a single operation or many.
 	//
-	// squadron.AddClones(1, client, armory, "get_batch")
-	squadron.AddClones(20, client, armory, "get_batch")
+	squadron.AddClones(1, client, armory, "get_batch")
+	// squadron.AddClones(30, client, armory, "get_batch")
 	// squadron.AddClones(1, client, armory,
 	// 	"get_contributions")
 	// squadron.AddChaos(10, 3, client, armory)
