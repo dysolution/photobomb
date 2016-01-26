@@ -64,9 +64,8 @@ func creates(edImageBatch, crVideoBatch espsdk.Batch) {
 	})
 
 	edImage := espsdk.Contribution{
-		SubmissionBatchID:    edImageBatch.ID,
 		CameraShotDate:       time.Now().Format("01/02/2006"),
-		ContentProviderName:  "provider",
+		ContentProviderName:  "SHERER, John",
 		ContentProviderTitle: "Contributor",
 		CountryOfShoot:       "United Kingdom",
 		CreditLine:           "John Sherer",
@@ -76,15 +75,16 @@ func creates(edImageBatch, crVideoBatch espsdk.Batch) {
 		IPTCCategory:         "S",
 		SiteDestination:      []string{"Editorial", "WireImage.com"},
 		Source:               "AFP",
+		SubmissionBatchID:    edImageBatch.ID,
 	}
 	makeBomb("create_photo", "POST", edImage.Path(), edImage)
 
 	release := espsdk.Release{
-		SubmissionBatchID: crVideoBatch.ID,
 		FileName:          "some_property.jpg",
-		ReleaseType:       "Property",
 		FilePath:          "submission/releases/batch_86572/24780225369200015_some_property.jpg",
 		MimeType:          "image/jpeg",
+		ReleaseType:       "Property",
+		SubmissionBatchID: crVideoBatch.ID,
 	}
 	makeBomb("create_release", "POST", release.Path(), release)
 }
@@ -93,8 +93,8 @@ func creates(edImageBatch, crVideoBatch espsdk.Batch) {
 func updates(batch espsdk.Batch, photo espsdk.Contribution) {
 	newBatchData := espsdk.Batch{
 		ID:             batch.ID,
-		SubmissionName: "updated headline",
 		Note:           "updated note",
+		SubmissionName: "updated headline",
 	}
 	makeBomb("update_a_batch", "PUT", "", newBatchData)
 
@@ -117,7 +117,7 @@ func defineWeapons() {
 	// an Editorial Batch and a Creative Batch that are known to exist
 	edImageBatch := espsdk.Batch{ID: 86102}
 	crVideoBatch := espsdk.Batch{ID: 89830}
-	contribution := espsdk.Contribution{ID: 1124654, SubmissionBatchID: edImageBatch.ID}
+	contribution := espsdk.Contribution{ID: 1124938, SubmissionBatchID: edImageBatch.ID}
 	release := espsdk.Release{ID: 40106, SubmissionBatchID: crVideoBatch.ID}
 
 	creates(edImageBatch, crVideoBatch)
@@ -127,6 +127,7 @@ func defineWeapons() {
 	duds(edImageBatch, crVideoBatch)
 
 	makeMissile("delete_last_batch", espsdk.DeleteLastBatch)
+	makeMissile("submit_photo", contribution.Submit)
 
 }
 
@@ -136,6 +137,7 @@ type RESTClient interface {
 	Create(sleepwalker.Findable) (sleepwalker.Result, error)
 	Update(sleepwalker.Findable) (sleepwalker.Result, error)
 	Delete(sleepwalker.Findable) (sleepwalker.Result, error)
+	Put(sleepwalker.Findable, string) (sleepwalker.Result, error)
 }
 
 // An Armory maintains a collection of weapons that can be retrieved by name.
@@ -222,10 +224,9 @@ func ExampleConfig() airstrike.Raid {
 	// You can also simulate heavy load by creating many anonymous Planes
 	// that each perform any workflow composed of a single operation or many.
 	//
-	squadron.AddClones(1, client, armory, "get_batch")
-	// squadron.AddClones(30, client, armory, "get_batch")
-	// squadron.AddClones(1, client, armory,
-	// 	"get_contributions")
+	// squadron.AddClones(1, client, armory, "submit_photo")
+	squadron.AddClones(3, client, armory, "get_batch")
+	// squadron.AddClones(1, client, armory, "get_contributions")
 	// squadron.AddChaos(10, 3, client, armory)
 
 	raid, err := airstrike.NewRaid(squadron.Planes...)
