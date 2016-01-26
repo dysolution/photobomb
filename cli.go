@@ -62,8 +62,8 @@ func main() {
 		},
 		cli.DurationFlag{
 			Name:   "attack-interval, i",
-			Value:  time.Duration(5 * time.Second),
-			Usage:  "wait this long between attacks (minimum 1s)",
+			Value:  time.Duration(5000 * time.Millisecond),
+			Usage:  "wait n ms between attacks",
 			EnvVar: "PHOTOBOMB_INTERVAL",
 		},
 		cli.DurationFlag{

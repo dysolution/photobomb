@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"runtime"
@@ -29,7 +30,7 @@ func serve() {
 	http.HandleFunc("/speedup", mw(speedup))
 	// TODO http.HandleFunc("/refresh_token", refreshToken)
 
-	go beginMission(reporter)
+	go beginMission(&cfg.Mission, reporter)
 
 	tcpSocket := ":8080"
 	log.Infof("listening on %s", tcpSocket)
@@ -37,7 +38,7 @@ func serve() {
 }
 
 // runs in a goroutine
-func beginMission(reporter airstrike.Reporter) {
+func beginMission(mission *airstrike.Mission, reporter airstrike.Reporter) {
 	desc := "beginMission"
 
 	// set up the reporter for logging and console output
@@ -48,7 +49,7 @@ func beginMission(reporter airstrike.Reporter) {
 	logCh <- map[string]interface{}{
 		"severity": "info",
 		"source":   desc,
-		"interval": interval,
+		"interval": mission.Interval,
 	}
 
 	viper.WatchConfig()
@@ -61,9 +62,10 @@ func beginMission(reporter airstrike.Reporter) {
 		select {
 		case enabled = <-toggle:
 		case d := <-intervalDelta:
-			setInterval(d)
+			setInterval(logFields, d, mission)
 		default:
 		}
+
 		if enabled {
 			logFields <- map[string]interface{}{
 				"msg":    "conducting raid",
@@ -71,19 +73,35 @@ func beginMission(reporter airstrike.Reporter) {
 			}
 
 			config.Conduct(log, espsdk.APIInvariant, logFields)
-			raidCount++
+			mission.RaidCount++
+			pauseBetweenRaids(logFields, mission)
+		}
+	}
+}
 
-			logFields <- map[string]interface{}{
-				"msg":      "sleeping",
-				"interval": interval,
-				"source":   desc,
-			}
-			time.Sleep(time.Duration(interval) * time.Second)
-			logFields <- map[string]interface{}{
-				"msg":      "waking up",
-				"interval": interval,
-				"source":   desc,
-			}
+func pauseBetweenRaids(logFields chan map[string]interface{}, mission *airstrike.Mission) {
+	desc := "pauseBetweenRaids"
+	if mission.Interval <= 0 {
+		logFields <- map[string]interface{}{
+			"severity": "error",
+			"err":      errors.New("non-positive interval; defaulting to 1s"),
+			"interval": mission.Interval,
+			"source":   desc,
+		}
+		time.Sleep(1000 * time.Millisecond)
+	} else {
+		logFields <- map[string]interface{}{
+			"msg":      "sleeping",
+			"interval": mission.Interval,
+			"source":   desc,
+		}
+
+		time.Sleep(time.Duration(mission.Interval) * time.Millisecond)
+
+		logFields <- map[string]interface{}{
+			"msg":      "waking up",
+			"interval": mission.Interval,
+			"source":   desc,
 		}
 	}
 }

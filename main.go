@@ -22,14 +22,14 @@ const VERSION = "0.1.0"
 var appID = fmt.Sprintf("%s %s", NAME, VERSION)
 
 var client sleepwalker.RESTClient
+var cfg Config
 var config airstrike.Raid
 var enabled bool
-var interval int
 var intervalDelta = make(chan float64, 1)
 var log *logrus.Logger
 var logCh = make(chan map[string]interface{})
 var logWarning = make(chan map[string]interface{})
-var raidCount, requestCount int
+var requestCount int
 var reporter airstrike.Reporter
 var toggle = make(chan bool, 1)
 var token sleepwalker.Token
@@ -51,10 +51,19 @@ func round(a float64) int {
 	return val
 }
 
-func setInterval(d float64) {
-	log.Debugf("changing interval by %v seconds", d)
-	interval = round(float64(interval) + d)
-	log.Debugf("new interval: %v", interval)
+func setInterval(logCh chan map[string]interface{}, d float64, mission *airstrike.Mission) {
+	logCh <- map[string]interface{}{
+		"message": "changing interval",
+		"delta":   d,
+	}
+	mission.Interval += d
+	logCh <- map[string]interface{}{
+		"interval": mission.Interval,
+	}
+	if mission.Interval <= 0 {
+		panic(fmt.Sprintf("tried to set interval to: %v", mission.Interval))
+		mission.Interval = 1
+	}
 }
 
 func tableFlip(e error) {

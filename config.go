@@ -51,7 +51,7 @@ func getConfig() Config {
 func appBefore(c *cli.Context) error {
 	desc := "cli.app.Before"
 
-	cfg := getConfig()
+	cfg = getConfig()
 
 	switch {
 	case c.Bool("debug"):
@@ -86,7 +86,7 @@ func appBefore(c *cli.Context) error {
 		log.Formatter = &logrus.JSONFormatter{}
 	}
 
-	cliInterval := int(c.Duration("attack-interval") / time.Duration(1*time.Second))
+	cliInterval := float64(c.Duration("attack-interval") / time.Duration(time.Millisecond))
 	if cliInterval != 0 {
 		cfg.Mission.Interval = cliInterval
 	}

@@ -74,7 +74,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 		AppName      string
 		Config       string
 		Enabled      bool
-		Interval     int
+		Interval     float64
 		Request      *http.Request
 		RaidCount    int
 		RequestCount int
@@ -84,9 +84,9 @@ func status(w http.ResponseWriter, r *http.Request) {
 		AppName:      appID,
 		Config:       string(output),
 		Enabled:      enabled,
-		Interval:     interval,
+		Interval:     cfg.Mission.Interval,
 		Request:      r,
-		RaidCount:    raidCount,
+		RaidCount:    cfg.Mission.RaidCount,
 		RequestCount: requestCount,
 		Routes:       routes,
 		Uptime:       time.Since(inception),
@@ -97,14 +97,14 @@ func status(w http.ResponseWriter, r *http.Request) {
 }
 
 func backoff(w http.ResponseWriter, r *http.Request) {
-	newInterval := float64(interval) * math.Phi
-	intervalDelta <- float64(newInterval - float64(interval))
+	newInterval := float64(cfg.Mission.Interval) * math.Phi
+	intervalDelta <- float64(newInterval - float64(cfg.Mission.Interval))
 	w.Write([]byte(fmt.Sprintf("backing off to %v", newInterval)))
 }
 
 func speedup(w http.ResponseWriter, r *http.Request) {
-	newInterval := float64(interval) / math.Phi
-	intervalDelta <- float64(newInterval - float64(interval))
+	newInterval := float64(cfg.Mission.Interval) / math.Phi
+	intervalDelta <- float64(newInterval - float64(cfg.Mission.Interval))
 	w.Write([]byte(fmt.Sprintf("speeding up to %v", newInterval)))
 }
 
