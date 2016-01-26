@@ -56,7 +56,7 @@ func setInterval(logCh chan map[string]interface{}, d float64, mission *airstrik
 		"message": "changing interval",
 		"delta":   d,
 	}
-	mission.Interval += d
+	mission.Interval = round(float64(mission.Interval) + d)
 	logCh <- map[string]interface{}{
 		"interval": mission.Interval,
 	}

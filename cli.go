@@ -68,7 +68,6 @@ func main() {
 		},
 		cli.DurationFlag{
 			Name:        "warning-threshold, w",
-			Value:       time.Duration(200 * time.Millisecond),
 			Usage:       "log WARNINGs for long response times, e.g.: [0.2s|200ms|200000μs|200000000ns]",
 			EnvVar:      "PHOTOBOMB_WARNING_THRESHOLD",
 			Destination: &warningThreshold,

@@ -74,7 +74,8 @@ func status(w http.ResponseWriter, r *http.Request) {
 		AppName      string
 		Config       string
 		Enabled      bool
-		Interval     float64
+		Interval     int
+		QPS          float64
 		Request      *http.Request
 		RaidCount    int
 		RequestCount int
@@ -85,6 +86,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 		Config:       string(output),
 		Enabled:      enabled,
 		Interval:     cfg.Mission.Interval,
+		QPS:          1000.0 / float64(cfg.Mission.Interval),
 		Request:      r,
 		RaidCount:    cfg.Mission.RaidCount,
 		RequestCount: requestCount,

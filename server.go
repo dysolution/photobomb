@@ -43,6 +43,9 @@ func beginMission(mission *airstrike.Mission, reporter airstrike.Reporter) {
 
 	// set up the reporter for logging and console output
 	logFields := make(chan map[string]interface{})
+	newThreshold := make(chan time.Duration)
+
+	reporter.ThresholdReceiver = newThreshold
 
 	go reporter.Run(logFields)
 
@@ -55,7 +58,7 @@ func beginMission(mission *airstrike.Mission, reporter airstrike.Reporter) {
 	viper.WatchConfig()
 	viper.OnConfigChange(func(e fsnotify.Event) {
 		fmt.Println("Config file changed:", e.Name)
-		fmt.Println(viper.GetString("foo")) // case-insensitive Setting & Getting
+		fmt.Println(viper.GetString("foo"))
 	})
 
 	for {
@@ -63,6 +66,7 @@ func beginMission(mission *airstrike.Mission, reporter airstrike.Reporter) {
 		case enabled = <-toggle:
 		case d := <-intervalDelta:
 			setInterval(logFields, d, mission)
+			reporter.ThresholdReceiver <- time.Duration(mission.Interval) * time.Millisecond
 		default:
 		}
 

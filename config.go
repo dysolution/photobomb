@@ -39,12 +39,9 @@ func getConfig() Config {
 	}
 
 	viper.Set("mission.inception", time.Now())
-	viper.SetDefault("mission.interval", 1)
 	viper.SetDefault("output.format", "json")
 
 	viper.Unmarshal(&cfg)
-	out, _ := json.MarshalIndent(cfg, "", "    ")
-	fmt.Printf("%s", out)
 	return cfg
 }
 
@@ -72,6 +69,15 @@ func appBefore(c *cli.Context) error {
 		log,
 	)
 
+	cliInterval := int(c.Duration("attack-interval") / time.Duration(time.Millisecond))
+	if cliInterval != 0 {
+		cfg.Mission.Interval = cliInterval
+	}
+
+	if c.Duration("warning-threshold") == 0 {
+		warningThreshold = time.Duration(cfg.Mission.Interval) * time.Millisecond
+	}
+
 	// set up the reporter for logging and console output
 	reporter = airstrike.Reporter{
 		CountGoroutines:  false, // caution: uses package runtime
@@ -86,11 +92,6 @@ func appBefore(c *cli.Context) error {
 		log.Formatter = &logrus.JSONFormatter{}
 	}
 
-	cliInterval := float64(c.Duration("attack-interval") / time.Duration(time.Millisecond))
-	if cliInterval != 0 {
-		cfg.Mission.Interval = cliInterval
-	}
-
 	config = loadConfig(c.String("config"))
 	cfgJSON, err := json.Marshal(config)
 	if err != nil {
@@ -99,6 +100,5 @@ func appBefore(c *cli.Context) error {
 		}).Error(desc)
 	}
 	log.WithFields(logrus.Fields{"config": string(cfgJSON)}).Debug(desc)
-
 	return nil
 }
