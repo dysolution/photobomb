@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8"/>
-    <meta http-equiv="refresh" content="10"/>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="refresh" content="10" />
 
-    <title>{{.AppName}}</title>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.1.1/foundation.min.css"/>
-    <link rel="icon" href="data:;base64,="/>
-
-    <style type="text/css">
+  <title>{{.AppName}}</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/foundation/6.1.1/foundation.min.css" type="text/css" />
+  <link rel="icon" href="data:;base64,=" />
+  <style type="text/css">
+/*<![CDATA[*/
       div#leftcolumn { padding-left: 30px; }
       div#rightcolumn {
         float: right;
@@ -28,41 +27,44 @@
         line-height: 1.1em;
         }
       tbody td { padding: 0.2rem; }
-    </style>
-  </head>
+  /*]]>*/
+  </style>
+</head>
 
-  <body>
-    <h1>photobomb</h1>
-    <div id="rightcolumn">
-      <div>
-        <h2>stats</h2>
-        <table>
-          <tr> <td>status</td> <td>{{ if .Enabled }}attacking{{ else }}paused{{ end }}</td> </tr>
-          <tr> <td>uptime</td> <td>{{ .Uptime }}</td> </tr>
-          <tr> <td>requests</td> <td>{{ .RequestCount }}</td> </tr>
-          <tr> <td>raids</td> <td>{{ .RaidCount }}</td> </tr>
-          <tr> <td>interval (s)</td> <td>{{ .Interval }}</td> </tr>
-        </table>
-      </div>
+<body>
+  <h1>photobomb</h1>
 
-      <div>
-        <h2>routes</h2>
-        <table>
-          <tr> <th>Path</th> <th>Action<th/></tr>
-          {{range $path, $helpText := .Routes}}
-          <tr><td><a href="{{ $path }}">{{ $path }}</a></td><td>{{ $helpText }}</td></tr>
-          {{end}}
-        </table>
-      </div>
-
+  <div id="rightcolumn">
+    <div>
+      <h2>stats</h2>
+      <table>
+        <tr> <td>status</td> <td>{{ if .Enabled }}attacking{{ else }}paused{{ end }}</td> </tr>
+        <tr> <td>uptime</td> <td>{{ .Uptime }}</td> </tr>
+        <tr> <td>requests</td> <td>{{ .RequestCount }}</td> </tr>
+        <tr> <td>raids</td> <td>{{ .RaidCount }}</td> </tr>
+        <tr> <td>interval (s)</td> <td>{{ .Interval }}</td> </tr>
+      </table>
     </div>
 
-    <div id="leftcolumn">
-      <div>
-        <h2>configuration</h2>
-        <pre>{{ .Config }}</pre>
-      </div>
+    <div>
+      <h2>routes</h2>
+      <table>
+        <tr> <th>Path</th> <th>Action</th> </tr>
+        {{range $path, $helpText := .Routes}}
+        <tr> <td><a href="{{ $path }}">{{ $path }}</a></td> <td>{{ $helpText }}</td> </tr>
+        {{end}}
+      </table>
     </div>
+  </div>
 
-  </body>
+	<div id="leftcolumn">
+		<div>
+			<h2>configuration</h2>
+			<pre>
+			{{ .Config }}
+			</pre>
+		</div>
+	</div>
+
+</body>
 </html>
