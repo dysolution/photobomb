@@ -78,8 +78,8 @@ func beginMission(mission *airstrike.Mission, reporter airstrike.Reporter) {
 
 			config.Conduct(log, espsdk.APIInvariant, logFields)
 			mission.RaidCount++
-			pauseBetweenRaids(logFields, mission)
 		}
+		pauseBetweenRaids(logFields, mission)
 	}
 }
 
@@ -94,19 +94,19 @@ func pauseBetweenRaids(logFields chan map[string]interface{}, mission *airstrike
 		}
 		time.Sleep(1000 * time.Millisecond)
 	} else {
-		logFields <- map[string]interface{}{
-			"msg":      "sleeping",
-			"interval": mission.Interval,
-			"source":   desc,
-		}
+		// logFields <- map[string]interface{}{
+		// 	"msg":      "sleeping",
+		// 	"interval": mission.Interval,
+		// 	"source":   desc,
+		// }
 
 		time.Sleep(time.Duration(mission.Interval) * time.Millisecond)
 
-		logFields <- map[string]interface{}{
-			"msg":      "waking up",
-			"interval": mission.Interval,
-			"source":   desc,
-		}
+		// logFields <- map[string]interface{}{
+		// 	"msg":      "waking up",
+		// 	"interval": mission.Interval,
+		// 	"source":   desc,
+		// }
 	}
 }
 
