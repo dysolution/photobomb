@@ -69,6 +69,8 @@ func appBefore(c *cli.Context) error {
 		log,
 	)
 
+	cfg.Mission.Enabled = true
+
 	cliInterval := int(c.Duration("attack-interval") / time.Duration(time.Millisecond))
 	if cliInterval != 0 {
 		cfg.Mission.Interval = cliInterval

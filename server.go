@@ -63,14 +63,14 @@ func beginMission(mission *airstrike.Mission, reporter airstrike.Reporter) {
 
 	for {
 		select {
-		case enabled = <-toggle:
+		case mission.Enabled = <-toggle:
 		case d := <-intervalDelta:
 			setInterval(logFields, d, mission)
 			reporter.ThresholdReceiver <- time.Duration(mission.Interval) * time.Millisecond
 		default:
 		}
 
-		if enabled {
+		if mission.Enabled {
 			logFields <- map[string]interface{}{
 				"msg":    "conducting raid",
 				"source": desc,

@@ -84,7 +84,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 	}{
 		AppName:      appID,
 		Config:       string(output),
-		Enabled:      enabled,
+		Enabled:      cfg.Mission.Enabled,
 		Interval:     cfg.Mission.Interval,
 		QPS:          1000.0 / float64(cfg.Mission.Interval),
 		Request:      r,
