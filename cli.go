@@ -115,7 +115,7 @@ func main() {
 			},
 			Action: func(c *cli.Context) {
 				reporter.Gauge = true
-				reporter.MaxColumns = c.Int("max-width")
+				reporter.GaugeWidth = c.Int("max-width")
 				reporter.Glyph = c.String("glyph")[0]
 				log.Level = logrus.ErrorLevel
 				serve()
