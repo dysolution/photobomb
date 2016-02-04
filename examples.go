@@ -59,12 +59,14 @@ func duds(edImageBatch, crVideoBatch espsdk.Batch) {
 // test Create / POST functionality
 func creates(edImageBatch, crVideoBatch espsdk.Batch) {
 	makeBomb("create_batch", "POST", espsdk.Batches, espsdk.Batch{
-		SubmissionName: appID + ": " + fake.FullName(),
-		SubmissionType: "getty_creative_video",
+		SubmissionName:        appID + ": " + fake.FullName(),
+		SubmissionType:        "getty_editorial_still",
+		SaveExtractedMetadata: false,
 	})
 
 	edImage := espsdk.Contribution{
-		CameraShotDate:       time.Now().Format("01/02/2006"),
+		// reference time: Mon Jan 2 15:04:05 -0700 MST 2006
+		CameraShotDate:       time.Now().Format("01/02/2006 15:04:05 -0700"),
 		ContentProviderName:  "SHERER, John",
 		ContentProviderTitle: "Contributor",
 		CountryOfShoot:       "United Kingdom",
@@ -78,6 +80,7 @@ func creates(edImageBatch, crVideoBatch espsdk.Batch) {
 		SubmissionBatchID:    edImageBatch.ID,
 	}
 	makeBomb("create_photo", "POST", edImage.Path(), edImage)
+	makeMissile("create_and_submit_photo", edImage.CreateAndSubmit)
 
 	release := espsdk.Release{
 		FileName:          "some_property.jpg",
@@ -141,13 +144,12 @@ type RESTClient interface {
 	Put(sleepwalker.Findable, string) (sleepwalker.Result, error)
 }
 
-// An Armory maintains a collection of weapons that can be retrieved by name.
-type Armory interface {
-	GetArsenal(...string)
-}
-
-func plane(name string, client RESTClient, armory ordnance.Armory, weaponNames ...string) airstrike.Plane {
-	plane := airstrike.NewPlane(name, client)
+func plane(client RESTClient, armory ordnance.Armory, weaponNames ...string) airstrike.Plane {
+	var fullName string
+	for _, name := range weaponNames {
+		fullName += "_" + name
+	}
+	plane := airstrike.NewPlane(fullName, client)
 	arsenal := armory.GetArsenal(weaponNames...)
 	plane.Arm(arsenal)
 	return plane
@@ -155,53 +157,47 @@ func plane(name string, client RESTClient, armory ordnance.Armory, weaponNames .
 
 func defineWorkflows(squadron *airstrike.Squadron, client RESTClient, armory ordnance.Armory) {
 
-	// Krieger makes everything possible.
-	// squadron.Add(plane("Krieger", client, armory,
+	// squadron.Add(plane(client, armory,
 	// 	"create_batch",
 	// 	"delete_last_batch",
 	// ))
 
-	// Cheryl's working.
-	// Cheryl := plane("Cheryl", client, armory,
+	// squadron.Add(plane(client, armory,
 	// 	"create_photo",
 	// 	"delete_last_photo",
-	// )
-	// squadron.Add(Cheryl)
+	// ))
 
-	// Pam needs you to fill out this form.
-	// Pam := plane("Pam", client, armory,
+	// squadron.Add(plane(client, armory,
+	// 	"create_and_submit_photo",
+	// ))
+
+	// squadron.Add(plane(client, armory,
 	// 	"create_release",
 	// 	"delete_last_release",
-	// )
-	// squadron.Add(Pam)
+	// ))
 
-	// Ray doesn't want to hear too much information.
-	// squadron.Add(plane("Ray", client, armory,
+	// squadron.Add(plane(client, armory,
 	// 	"get_batch",
 	// 	"get_contribution",
 	// 	"get_release",
 	// ))
 
-	// Archer wants things his way.
-	// squadron.Add(plane("Archer", client, armory,
+	// squadron.Add(plane(client, armory,
 	// 	"update_a_batch",
 	// 	"update_a_contribution",
 	// ))
 
-	// Cyril accounts for everything.
-	// squadron.Add(plane("Cyril", client, armory,
+	// squadron.Add(plane(client, armory,
 	// 	"get_batches",
 	// 	"get_contributions",
 	// 	"get_releases",
 	// ))
 
-	// Malory makes unreasonable demands.
-	// Malory := plane("Malory", client, armory,
+	// squadron.Add(plane(client, armory,
 	// 	"get_invalid_batch",
 	// 	"get_invalid_contribution",
 	// 	"get_invalid_release",
-	// )
-	// squadron.Add(Malory)
+	// ))
 }
 
 // ExampleConfig returns an example of a complete configuration for the app.
@@ -225,8 +221,9 @@ func ExampleConfig() airstrike.Raid {
 	// You can also simulate heavy load by creating many anonymous Planes
 	// that each perform any workflow composed of a single operation or many.
 	//
-	// squadron.AddClones(1, client, armory, "submit_photo")
-	squadron.AddClones(3, client, armory, "get_batch")
+	squadron.AddClones(1, client, armory, "delete_last_batch")
+	// squadron.AddClones(1, client, armory, "create_and_submit_photo")
+	// squadron.AddClones(10, client, armory, "get_batch")
 	// squadron.AddClones(1, client, armory, "get_contributions")
 	// squadron.AddChaos(10, 3, client, armory)
 
