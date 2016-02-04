@@ -48,9 +48,9 @@ func indexes(edImageBatch, crVideoBatch espsdk.Batch) {
 
 // a few objects that don't exist, to test 404
 func duds(edImageBatch, crVideoBatch espsdk.Batch) {
-	badBatch := espsdk.Batch{ID: -1}
-	badContribution := espsdk.Contribution{ID: -1, SubmissionBatchID: edImageBatch.ID}
-	badRelease := espsdk.Release{ID: -1, SubmissionBatchID: crVideoBatch.ID}
+	badBatch := espsdk.Batch{ID: "-1"}
+	badContribution := espsdk.Contribution{ID: "-1", SubmissionBatchID: edImageBatch.ID}
+	badRelease := espsdk.Release{ID: "-1", SubmissionBatchID: crVideoBatch.ID}
 	makeBomb("get_invalid_batch", "GET", badBatch.Path(), badBatch)
 	makeBomb("get_invalid_contribution", "GET", badContribution.Path(), badContribution)
 	makeBomb("get_invalid_release", "GET", badRelease.Path(), badRelease)
@@ -115,10 +115,11 @@ func gets(b espsdk.Batch, c espsdk.Contribution, r espsdk.Release) {
 
 func defineWeapons() {
 	// an Editorial Batch and a Creative Batch that are known to exist
-	edImageBatch := espsdk.Batch{ID: 86102}
-	crVideoBatch := espsdk.Batch{ID: 89830}
-	contribution := espsdk.Contribution{ID: 1124938, SubmissionBatchID: edImageBatch.ID}
-	release := espsdk.Release{ID: 40106, SubmissionBatchID: crVideoBatch.ID}
+	edImageBatch := espsdk.Batch{ID: "86102"}
+	crVideoBatch := espsdk.Batch{ID: "89830"}
+	contribution := espsdk.Contribution{ID: "1125110", SubmissionBatchID: edImageBatch.ID}
+	// contribution := espsdk.Contribution{ID: 1124938, SubmissionBatchID: edImageBatch.ID}
+	release := espsdk.Release{ID: "40106", SubmissionBatchID: crVideoBatch.ID}
 
 	creates(edImageBatch, crVideoBatch)
 	updates(edImageBatch, contribution)
