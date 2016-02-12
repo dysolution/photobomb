@@ -59,7 +59,11 @@ func setInterval(logCh chan map[string]interface{}, d float64, mission *airstrik
 		"interval": mission.Interval,
 	}
 	if mission.Interval <= 0 {
-		panic(fmt.Sprintf("tried to set interval to: %v", mission.Interval))
+		logCh <- map[string]interface{}{
+			"severity": "error",
+			"message":  "invalid interval",
+			"interval": mission.Interval,
+		}
 		mission.Interval = 1
 	}
 }
