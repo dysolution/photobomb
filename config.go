@@ -59,15 +59,17 @@ func appBefore(c *cli.Context) error {
 		log.Level = logrus.InfoLevel
 	}
 
-	client = sleepwalker.GetClient(
-		c.String("key"),
-		c.String("secret"),
-		c.String("username"),
-		c.String("password"),
+	client = sleepwalker.GetClient(&sleepwalker.Config{
+		&sleepwalker.Credentials{
+			APIKey:    c.String("key"),
+			APISecret: c.String("secret"),
+			Username:  c.String("username"),
+			Password:  c.String("password"),
+		},
 		espsdk.OAuthEndpoint,
-		espsdk.ESPAPIRoot,
+		espsdk.SandboxAPI,
 		log,
-	)
+	})
 
 	cfg.Mission.Enabled = true
 

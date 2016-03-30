@@ -23,7 +23,7 @@ func makeBomb(name, method, url string, payload sleepwalker.RESTObject) {
 
 // test the Index functionality
 func indexes(edImageBatch, crVideoBatch espsdk.Batch) {
-	makeBomb("get_batches", "GET", espsdk.Batches, espsdk.Batch{})
+	makeBomb("get_batches", "GET", espsdk.BatchesEndpoint, espsdk.Batch{})
 	makeMissile(
 		"get_contributions",
 		func(c sleepwalker.RESTClient) (sleepwalker.Result, error) {
@@ -58,7 +58,7 @@ func duds(edImageBatch, crVideoBatch espsdk.Batch) {
 
 // test Create / POST functionality
 func creates(edImageBatch, crVideoBatch espsdk.Batch) {
-	makeBomb("create_batch", "POST", espsdk.Batches, espsdk.Batch{
+	makeBomb("create_batch", "POST", espsdk.BatchesEndpoint, espsdk.Batch{
 		SubmissionName:        appID + ": " + fake.FullName(),
 		SubmissionType:        "getty_editorial_still",
 		SaveExtractedMetadata: false,
@@ -221,9 +221,11 @@ func ExampleConfig() airstrike.Raid {
 	// You can also simulate heavy load by creating many anonymous Planes
 	// that each perform any workflow composed of a single operation or many.
 	//
-	squadron.AddClones(1, client, armory, "delete_last_batch")
+	// squadron.AddClones(1, client, armory, "delete_last_batch")
+	// squadron.AddClones(1, client, armory, "create_photo")
+	// squadron.AddClones(1, client, armory, "delete_last_photo")
 	// squadron.AddClones(1, client, armory, "create_and_submit_photo")
-	// squadron.AddClones(10, client, armory, "get_batch")
+	squadron.AddClones(1, client, armory, "get_batch")
 	// squadron.AddClones(1, client, armory, "get_contributions")
 	// squadron.AddChaos(10, 3, client, armory)
 

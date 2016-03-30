@@ -74,6 +74,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 		AppName      string
 		Config       string
 		Enabled      bool
+		Goroutines   int
 		Interval     int
 		QPS          string
 		Request      *http.Request
@@ -85,6 +86,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 		AppName:      appID,
 		Config:       string(output),
 		Enabled:      cfg.Mission.Enabled,
+		Goroutines:   runtime.NumGoroutine(),
 		Interval:     cfg.Mission.Interval,
 		QPS:          fmt.Sprintf("%.1f", 1000.0/float64(cfg.Mission.Interval)),
 		Request:      r,
