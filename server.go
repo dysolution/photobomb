@@ -7,6 +7,7 @@ import (
 )
 
 func serve() {
+	http.HandleFunc("/favicon.ico", mw(favicon))
 	http.HandleFunc("/", mw(root))
 	http.HandleFunc("/config", mw(showConfig))
 	http.HandleFunc("/config/new", mw(showConfigNew))

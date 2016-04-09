@@ -39,6 +39,10 @@ func mw(fn http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+func favicon(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "assets/favicon.ico")
+}
+
 func root(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("index.html")
 	fatal(err)
@@ -47,8 +51,6 @@ func root(w http.ResponseWriter, r *http.Request) {
 	routes["/"] = "display this message"
 	routes["/example"] = "display an example config"
 	routes["/config"] = "display the current config"
-	routes["/faster"] = "decrease the interval between attacks"
-	routes["/slower"] = "increase the interval between attacks"
 	routes["/once"] = "execute the current config once"
 	routes["/warning_shot"] = "execute the current config once"
 	routes["/attack"] = "commence an attack"
