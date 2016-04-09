@@ -19,15 +19,12 @@ type Config struct {
 		Quiet  bool   `json:"quiet"`
 		Level  string `json:"level"`
 	} `json:"output"`
-	Mission airstrike.Mission `json:"mission"`
+	Mission *airstrike.Mission `json:"mission"`
 }
 
-func getConfig() Config {
-
+func getConfig() (cfg Config) {
 	viper.SetEnvPrefix(NAME)
 	viper.AutomaticEnv()
-
-	var cfg Config
 
 	viper.SetConfigType("json")
 	viper.SetConfigName("viperconfig")
@@ -48,8 +45,6 @@ func getConfig() Config {
 func appBefore(c *cli.Context) error {
 	desc := "cli.app.Before"
 
-	cfg = getConfig()
-
 	switch {
 	case c.Bool("debug"):
 		log.Level = logrus.DebugLevel
@@ -58,6 +53,9 @@ func appBefore(c *cli.Context) error {
 	default:
 		log.Level = logrus.InfoLevel
 	}
+
+	getConfig()
+	cfg.Mission = airstrike.NewMission(log)
 
 	client = sleepwalker.GetClient(&sleepwalker.Config{
 		&sleepwalker.Credentials{
@@ -73,8 +71,8 @@ func appBefore(c *cli.Context) error {
 
 	cfg.Mission.Enabled = true
 
-	cliInterval := int(c.Duration("attack-interval") / time.Duration(time.Millisecond))
-	if cliInterval != 0 {
+	cliInterval := float64(c.Duration("attack-interval") / time.Duration(time.Millisecond))
+	if cliInterval > 0 {
 		cfg.Mission.Interval = cliInterval
 	}
 
@@ -83,12 +81,8 @@ func appBefore(c *cli.Context) error {
 	}
 
 	// set up the reporter for logging and console output
-	reporter = airstrike.Reporter{
-		CountGoroutines:  false, // caution: uses package runtime
-		Logger:           log,
-		URLInvariant:     espsdk.APIInvariant,
-		WarningThreshold: warningThreshold,
-	}
+	cfg.Mission.Reporter.URLInvariant = espsdk.APIInvariant
+	cfg.Mission.Reporter.WarningThreshold = warningThreshold
 
 	token = sleepwalker.Token(c.String("token"))
 

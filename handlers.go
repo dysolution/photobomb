@@ -6,8 +6,6 @@ import (
 	"html/template"
 	"math"
 	"net/http"
-	"reflect"
-	"runtime"
 	"time"
 
 	"github.com/dysolution/airstrike"
@@ -19,7 +17,7 @@ func mw(fn http.HandlerFunc) http.HandlerFunc {
 		start := time.Now()
 		desc := "httpd"
 		requestCount++
-		name := runtime.FuncForPC(reflect.ValueOf(fn).Pointer()).Name()
+		name := "httpd"
 		log.WithFields(map[string]interface{}{
 			"host":       r.RemoteAddr,
 			"method":     r.Method,
@@ -40,9 +38,10 @@ func mw(fn http.HandlerFunc) http.HandlerFunc {
 		}).Info(desc)
 	}
 }
-func status(w http.ResponseWriter, r *http.Request) {
+
+func root(w http.ResponseWriter, r *http.Request) {
 	t, err := template.ParseFiles("index.html")
-	tableFlip(err)
+	fatal(err)
 
 	routes := make(map[string]string)
 	routes["/"] = "display this message"
@@ -59,14 +58,14 @@ func status(w http.ResponseWriter, r *http.Request) {
 	routes["/pause"] = "pause an attack"
 
 	configJSON, err := json.Marshal(config)
-	tableFlip(err)
+	fatal(err)
 
 	var simpleConfig airstrike.SimpleRaid
 	err = json.Unmarshal(configJSON, &simpleConfig)
-	tableFlip(err)
+	fatal(err)
 
 	output, err := json.MarshalIndent(simpleConfig, "", "    ")
-	tableFlip(err)
+	fatal(err)
 
 	inception := viper.GetTime("mission.inception")
 
@@ -74,8 +73,7 @@ func status(w http.ResponseWriter, r *http.Request) {
 		AppName      string
 		Config       string
 		Enabled      bool
-		Goroutines   int
-		Interval     int
+		Interval     float64
 		QPS          string
 		Request      *http.Request
 		RaidCount    int
@@ -86,7 +84,6 @@ func status(w http.ResponseWriter, r *http.Request) {
 		AppName:      appID,
 		Config:       string(output),
 		Enabled:      cfg.Mission.Enabled,
-		Goroutines:   runtime.NumGoroutine(),
 		Interval:     cfg.Mission.Interval,
 		QPS:          fmt.Sprintf("%.1f", 1000.0/float64(cfg.Mission.Interval)),
 		Request:      r,
@@ -97,53 +94,54 @@ func status(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = t.Execute(w, data)
-	tableFlip(err)
+	fatal(err)
 }
 
 func backoff(w http.ResponseWriter, r *http.Request) {
 	newInterval := float64(cfg.Mission.Interval) * math.Phi
-	intervalDelta <- float64(newInterval - float64(cfg.Mission.Interval))
+	intervalDeltaCh <- float64(newInterval - float64(cfg.Mission.Interval))
 	w.Write([]byte(fmt.Sprintf("backing off to %v", newInterval)))
 }
 
 func speedup(w http.ResponseWriter, r *http.Request) {
 	newInterval := float64(cfg.Mission.Interval) / math.Phi
-	intervalDelta <- float64(newInterval - float64(cfg.Mission.Interval))
+	intervalDeltaCh <- float64(newInterval - float64(cfg.Mission.Interval))
 	w.Write([]byte(fmt.Sprintf("speeding up to %v", newInterval)))
 }
 
-func faster(w http.ResponseWriter, r *http.Request) {
-	intervalDelta <- -1.0
-	w.Write([]byte("faster"))
-}
-
-func slower(w http.ResponseWriter, r *http.Request) {
-	intervalDelta <- 1.0
-	w.Write([]byte("slower"))
+func getStatus(w http.ResponseWriter, r *http.Request) {
+	w.Write([]byte(fmt.Sprintf("%s", status)))
 }
 
 func pause(w http.ResponseWriter, r *http.Request) {
-	toggle <- false
+	cfg.Mission.EnabledCh <- false
 	log.Infof("paused")
 	w.Write([]byte("paused"))
 }
 
 func attack(w http.ResponseWriter, r *http.Request) {
-	toggle <- true
+	cfg.Mission.EnabledCh <- true
 	log.Infof("attacking")
 	w.Write([]byte("attacking"))
 }
 
 func showConfig(w http.ResponseWriter, r *http.Request) {
 	configJSON, err := json.MarshalIndent(config, "", "  ")
-	tableFlip(err)
+	fatal(err)
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Write(configJSON)
+}
+
+func showConfigNew(w http.ResponseWriter, r *http.Request) {
+	configJSON, err := json.MarshalIndent(config, "", "  ")
+	fatal(err)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(configJSON)
 }
 
 func showExampleConfig(w http.ResponseWriter, r *http.Request) {
-	output, err := json.MarshalIndent(ExampleConfig(), "", "    ")
-	tableFlip(err)
+	output, err := json.MarshalIndent(ExampleRaid(), "", "    ")
+	fatal(err)
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.Write(output)
 }

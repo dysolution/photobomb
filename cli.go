@@ -62,7 +62,7 @@ func main() {
 		},
 		cli.DurationFlag{
 			Name:   "attack-interval, i",
-			Value:  time.Duration(5000 * time.Millisecond),
+			Value:  time.Duration(1000 * time.Millisecond),
 			Usage:  "wait n ms between attacks",
 			EnvVar: "PHOTOBOMB_INTERVAL",
 		},
@@ -85,7 +85,7 @@ func main() {
 			Usage: "print a JSON representation of the config",
 			Action: func(c *cli.Context) {
 				out, err := json.MarshalIndent(config, "", "    ")
-				tableFlip(err)
+				fatal(err)
 				fmt.Printf("%s\n", out)
 			},
 		},
@@ -93,8 +93,8 @@ func main() {
 			Name:  "example",
 			Usage: "print an example JSON configuration",
 			Action: func(c *cli.Context) {
-				out, err := json.MarshalIndent(ExampleConfig(), "", "    ")
-				tableFlip(err)
+				out, err := json.MarshalIndent(ExampleRaid(), "", "    ")
+				fatal(err)
 				fmt.Printf("%s\n", out)
 			},
 		},
@@ -114,9 +114,9 @@ func main() {
 				},
 			},
 			Action: func(c *cli.Context) {
-				reporter.Gauge = true
-				reporter.GaugeWidth = c.Int("max-width")
-				reporter.Glyph = c.String("glyph")[0]
+				cfg.Mission.Reporter.Gauge = true
+				cfg.Mission.Reporter.GaugeWidth = c.Int("max-width")
+				cfg.Mission.Reporter.Glyph = c.String("glyph")[0]
 				log.Level = logrus.ErrorLevel
 				serve()
 			},

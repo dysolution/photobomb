@@ -3,21 +3,43 @@ package main
 import (
 	"time"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/dysolution/airstrike"
+	as "github.com/dysolution/airstrike"
 	"github.com/dysolution/airstrike/ordnance"
 	"github.com/dysolution/espsdk"
-	"github.com/dysolution/sleepwalker"
+	sw "github.com/dysolution/sleepwalker"
 	"github.com/icrowley/fake"
 )
 
+// ExampleConfig returns an example of a complete configuration for the app.
+// When marshaled into JSON, this can be used as the contents of the config
+// file.
+//
+// Create Planes that are idempotent, i.e., if you create an object, make
+// sure that plane then deletes that object. Otherwise you could end up
+// exceeding maximum limits or deleting objects you didn't intend to.
+func ExampleRaid() as.Raid {
+	armory = ordnance.NewArmory()
+	defineWeapons()
+
+	squadron := as.NewSquadron()
+	squadron.AddClones(1, client, armory, "get_batch")
+	squadron.AddClones(1, client, armory, "get_contributions")
+
+	defineWorkflows(&squadron, client, armory)
+	raid, err := as.NewRaid(squadron.Planes...)
+	if err != nil {
+		return as.Raid{}
+	}
+	return raid
+}
+
 var armory ordnance.Armory
 
-func makeMissile(name string, op func(sleepwalker.RESTClient) (sleepwalker.Result, error)) {
+func makeMissile(name string, op func(sw.RESTClient) (sw.Result, error)) {
 	armory.NewMissile(client, name, op)
 }
 
-func makeBomb(name, method, url string, payload sleepwalker.RESTObject) {
+func makeBomb(name, method, url string, payload sw.RESTObject) {
 	armory.NewBomb(client, name, method, url, payload)
 }
 
@@ -26,7 +48,7 @@ func indexes(edImageBatch, crVideoBatch espsdk.Batch) {
 	makeBomb("get_batches", "GET", espsdk.BatchesEndpoint, espsdk.Batch{})
 	makeMissile(
 		"get_contributions",
-		func(c sleepwalker.RESTClient) (sleepwalker.Result, error) {
+		func(c sw.RESTClient) (sw.Result, error) {
 			// Getting an empty Contribution with a SubmissionBatchID retrieves
 			// the index of all Contributions for that Batch.
 			return client.Get(espsdk.Contribution{
@@ -36,7 +58,7 @@ func indexes(edImageBatch, crVideoBatch espsdk.Batch) {
 	)
 	makeMissile(
 		"get_releases",
-		func(c sleepwalker.RESTClient) (sleepwalker.Result, error) {
+		func(c sw.RESTClient) (sw.Result, error) {
 			// Getting an empty Release with a SubmissionBatchID retrieves
 			// the index of all Releases for that Batch.
 			return client.Get(espsdk.Release{
@@ -110,7 +132,7 @@ func updates(batch espsdk.Batch, photo espsdk.Contribution) {
 }
 
 // test Get / GET functionality
-func gets(b espsdk.Batch, c espsdk.Contribution, r espsdk.Release) {
+func gets(b, c, r sw.RESTObject) {
 	makeBomb("get_batch", "GET", "", b)
 	makeBomb("get_contribution", "GET", "", c)
 	makeBomb("get_release", "GET", "", r)
@@ -137,104 +159,65 @@ func defineWeapons() {
 
 // A RESTClient can perform operations against a REST API.
 type RESTClient interface {
-	Get(sleepwalker.Findable) (sleepwalker.Result, error)
-	Create(sleepwalker.Findable) (sleepwalker.Result, error)
-	Update(sleepwalker.Findable) (sleepwalker.Result, error)
-	Delete(sleepwalker.Findable) (sleepwalker.Result, error)
-	Put(sleepwalker.Findable, string) (sleepwalker.Result, error)
+	Get(sw.Findable) (sw.Result, error)
+	Create(sw.Findable) (sw.Result, error)
+	Update(sw.Findable) (sw.Result, error)
+	Delete(sw.Findable) (sw.Result, error)
+	Put(sw.Findable, string) (sw.Result, error)
 }
 
-func plane(client RESTClient, armory ordnance.Armory, weaponNames ...string) airstrike.Plane {
+func plane(client RESTClient, armory ordnance.Armory, weaponNames ...string) as.Plane {
 	var fullName string
 	for _, name := range weaponNames {
 		fullName += "_" + name
 	}
-	plane := airstrike.NewPlane(fullName, client)
+	plane := as.NewPlane(fullName, client)
 	arsenal := armory.GetArsenal(weaponNames...)
 	plane.Arm(arsenal)
 	return plane
 }
 
-func defineWorkflows(squadron *airstrike.Squadron, client RESTClient, armory ordnance.Armory) {
+func defineWorkflows(s *as.Squadron, c RESTClient, a ordnance.Armory) {
 
-	// squadron.Add(plane(client, armory,
-	// 	"create_batch",
-	// 	"delete_last_batch",
-	// ))
+	s.Add(plane(c, a,
+		"create_batch",
+		"delete_last_batch",
+	))
 
-	// squadron.Add(plane(client, armory,
+	// s.Add(plane(c, a,
 	// 	"create_photo",
 	// 	"delete_last_photo",
 	// ))
 
-	// squadron.Add(plane(client, armory,
+	// s.Add(plane(c, a,
 	// 	"create_and_submit_photo",
 	// ))
 
-	// squadron.Add(plane(client, armory,
+	// s.Add(plane(c, a,
 	// 	"create_release",
 	// 	"delete_last_release",
 	// ))
 
-	// squadron.Add(plane(client, armory,
+	// s.Add(plane(c, a,
 	// 	"get_batch",
 	// 	"get_contribution",
 	// 	"get_release",
 	// ))
 
-	// squadron.Add(plane(client, armory,
+	// s.Add(plane(c, a,
 	// 	"update_a_batch",
 	// 	"update_a_contribution",
 	// ))
 
-	// squadron.Add(plane(client, armory,
+	// s.Add(plane(c, a,
 	// 	"get_batches",
 	// 	"get_contributions",
 	// 	"get_releases",
 	// ))
 
-	// squadron.Add(plane(client, armory,
+	// s.Add(plane(c, a,
 	// 	"get_invalid_batch",
 	// 	"get_invalid_contribution",
 	// 	"get_invalid_release",
 	// ))
-}
-
-// ExampleConfig returns an example of a complete configuration for the app.
-// When marshaled into JSON, this can be used as the contents of the config
-// file.
-//
-// Create Planes that are idempotent, i.e., if you create an object, make
-// sure that plane then deletes that object. Otherwise you could end up
-// exceeding maximum limits or deleting objects you didn't intend to.
-func ExampleConfig() airstrike.Raid {
-
-	armory = ordnance.NewArmory(log)
-	defineWeapons()
-
-	go logger(logCh, log)
-
-	squadron := airstrike.NewSquadron(logCh)
-
-	defineWorkflows(&squadron, client, armory)
-
-	// You can also simulate heavy load by creating many anonymous Planes
-	// that each perform any workflow composed of a single operation or many.
-	//
-	// squadron.AddClones(1, client, armory, "delete_last_batch")
-	// squadron.AddClones(1, client, armory, "create_photo")
-	// squadron.AddClones(1, client, armory, "delete_last_photo")
-	// squadron.AddClones(1, client, armory, "create_and_submit_photo")
-	squadron.AddClones(1, client, armory, "get_batch")
-	// squadron.AddClones(1, client, armory, "get_contributions")
-	// squadron.AddChaos(10, 3, client, armory)
-
-	raid, err := airstrike.NewRaid(squadron.Planes...)
-	if err != nil {
-		logrus.WithFields(map[string]interface{}{
-			"error": err,
-		}).Error("ExampleConfig")
-		return airstrike.Raid{}
-	}
-	return raid
 }
