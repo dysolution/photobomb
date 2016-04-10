@@ -101,18 +101,18 @@ func root(w http.ResponseWriter, r *http.Request) {
 
 func backoff(w http.ResponseWriter, r *http.Request) {
 	newInterval := float64(cfg.Mission.Interval) * math.Phi
-	intervalDeltaCh <- float64(newInterval - float64(cfg.Mission.Interval))
+	cfg.Mission.IntervalDeltaCh <- float64(newInterval - float64(cfg.Mission.Interval))
 	w.Write([]byte(fmt.Sprintf("backing off to %v", newInterval)))
 }
 
 func speedup(w http.ResponseWriter, r *http.Request) {
 	newInterval := float64(cfg.Mission.Interval) / math.Phi
-	intervalDeltaCh <- float64(newInterval - float64(cfg.Mission.Interval))
+	cfg.Mission.IntervalDeltaCh <- float64(newInterval - float64(cfg.Mission.Interval))
 	w.Write([]byte(fmt.Sprintf("speeding up to %v", newInterval)))
 }
 
 func getStatus(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte(fmt.Sprintf("%s", status)))
+	w.Write([]byte(fmt.Sprintf("%v", status)))
 }
 
 func pause(w http.ResponseWriter, r *http.Request) {

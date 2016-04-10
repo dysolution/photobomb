@@ -23,7 +23,7 @@ func ExampleRaid() as.Raid {
 
 	squadron := as.NewSquadron()
 	squadron.AddClones(1, client, armory, "get_batch")
-	squadron.AddClones(1, client, armory, "get_contributions")
+	// squadron.AddClones(1, client, armory, "get_contributions")
 
 	defineWorkflows(&squadron, client, armory)
 	raid, err := as.NewRaid(squadron.Planes...)
@@ -179,10 +179,10 @@ func plane(client RESTClient, armory ordnance.Armory, weaponNames ...string) as.
 
 func defineWorkflows(s *as.Squadron, c RESTClient, a ordnance.Armory) {
 
-	s.Add(plane(c, a,
-		"create_batch",
-		"delete_last_batch",
-	))
+	// s.Add(plane(c, a,
+	// 	"create_batch",
+	// 	"delete_last_batch",
+	// ))
 
 	// s.Add(plane(c, a,
 	// 	"create_photo",

@@ -20,18 +20,16 @@ func NewReporter() *Reporter {
 
 func (r *Reporter) listen() {
 	desc := fmt.Sprintf("photobomb.logger")
-	for {
-		select {
-		case fields := <-r.LogCh:
-			switch fields["severity"] {
-			case "INFO", "info":
-				r.Logger.WithFields(fields).Info(desc)
-			case "WARN", "warn":
-				r.Logger.WithFields(fields).Warn(desc)
-			default:
-				r.Logger.WithFields(fields).Debug(desc)
-			}
+	select {
+	case fields := <-r.LogCh:
+		switch fields["severity"] {
+		case "INFO", "info":
+			r.Logger.WithFields(fields).Info(desc)
+		case "WARN", "warn":
+			r.Logger.WithFields(fields).Warn(desc)
 		default:
+			r.Logger.WithFields(fields).Debug(desc)
 		}
+	default:
 	}
 }

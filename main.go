@@ -20,21 +20,18 @@ const NAME = "photobomb"
 const VERSION = "0.1.0"
 
 var (
-	appID              = fmt.Sprintf("%s %s", NAME, VERSION)
-	cfg                Config
-	client             sleepwalker.RESTClient
-	config             airstrike.Raid
-	intervalDeltaCh    = make(chan float64, 1)
-	lastResponseTimeCh = make(chan time.Duration)
-	log                *logrus.Logger
-	maxResponseTime    time.Duration
-	reporter           *airstrike.Reporter
-	requestCount       int
-	status             int
-	statusCh           = make(chan int, 1)
-	toggle             = make(chan bool)
-	token              sleepwalker.Token
-	warningThreshold   time.Duration
+	appID            = fmt.Sprintf("%s %s", NAME, VERSION)
+	cfg              Config
+	client           sleepwalker.RESTClient
+	config           airstrike.Raid
+	log              *logrus.Logger
+	reporter         *airstrike.Reporter
+	requestCount     int
+	status           int
+	statusCh         = make(chan int, 1)
+	toggle           = make(chan bool, 1)
+	token            sleepwalker.Token
+	warningThreshold time.Duration
 )
 
 type Fields map[string]interface{}
@@ -47,13 +44,6 @@ func init() {
 func fatal(e error) {
 	if e != nil {
 		log.Fatal(e)
-	}
-}
-
-func evaluateResponseTime() {
-	lastResponseTime := <-lastResponseTimeCh
-	if lastResponseTime < maxResponseTime {
-		statusCh <- 0
 	}
 }
 
