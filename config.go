@@ -58,15 +58,15 @@ func appBefore(c *cli.Context) error {
 	cfg.Mission = airstrike.NewMission(log)
 
 	client = sleepwalker.GetClient(&sleepwalker.Config{
-		&sleepwalker.Credentials{
+		Credentials: &sleepwalker.Credentials{
 			APIKey:    c.String("key"),
 			APISecret: c.String("secret"),
 			Username:  c.String("username"),
 			Password:  c.String("password"),
 		},
-		espsdk.OAuthEndpoint,
-		espsdk.SandboxAPI,
-		log,
+		OAuthEndpoint: espsdk.OAuthEndpoint,
+		APIRoot:       espsdk.SandboxAPI,
+		Logger:        log,
 	})
 
 	cfg.Mission.Enabled = true
